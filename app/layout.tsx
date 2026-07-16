@@ -1,6 +1,11 @@
+import { AppSidebar } from "@/components/app-sidebar";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +32,29 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <div className="[--header-height:calc(--spacing(14))]">
+          <TooltipProvider>
+            <SidebarProvider className="flex flex-col">
+              <SiteHeader />
+              <div className="flex flex-1">
+                <AppSidebar />
+                {/* <SidebarInset>
+                  <div className="flex flex-1 flex-col gap-4 p-4">
+                    <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+                      <div className="aspect-video rounded-xl bg-muted/50" />
+                      <div className="aspect-video rounded-xl bg-muted/50" />
+                      <div className="aspect-video rounded-xl bg-muted/50" />
+                    </div>
+                    <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+                  </div>
+                </SidebarInset> */}
+                {children}
+              </div>
+            </SidebarProvider>
+          </TooltipProvider>
+        </div>
+      </body>
     </html>
   );
 }
