@@ -1,35 +1,36 @@
 "use client";
 
-import { Product, Sale } from "@/types";
+import { OrderReturnType } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-
-export const columns: ColumnDef<Sale>[] = [
+export const columns: ColumnDef<OrderReturnType>[] = [
   {
     accessorKey: "date",
     header: "Date",
+    cell: ({ row }) => {
+      const date = row.getValue("date") as string;
+      return <div>{date.split("T")[0]}</div>;
+    },
   },
   {
     accessorKey: "invoice",
     header: "Invoice",
   },
   {
-    accessorKey: "customer",
+    accessorKey: "customerName",
     header: "Customer",
   },
   {
-    accessorKey: "item",
-    header: "Item",
+    accessorKey: "items",
+    header: "Items",
     cell: ({ getValue }) => {
-      const items = getValue() as Product[];
+      const items = getValue() as { productName: string; quantity: number }[];
 
       return (
         <div className="flex flex-col gap-1">
           {items.map((item) => (
-            <div key={item.id}>
-              {item.name} @{item.quantity}
+            <div key={item.productName}>
+              {item.productName} @{item.quantity}
             </div>
           ))}
         </div>
@@ -39,9 +40,10 @@ export const columns: ColumnDef<Sale>[] = [
   {
     accessorKey: "status",
     header: "Status",
-    // cell: ({ row }) => {
-    //   return <div>{row.getValue("status").toUpperCase()}</div>;
-    // },
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return <div>{status.toUpperCase()}</div>;
+    },
   },
   {
     accessorKey: "amount",

@@ -1,14 +1,12 @@
-import { createInsertSchema, createSelectSchema } from "drizzle-orm/zod";
 import {
   serial,
   pgEnum,
   varchar,
   integer,
-  numeric,
   timestamp,
   snakeCase,
+  uuid,
 } from "drizzle-orm/pg-core";
-import { z } from "zod";
 
 export const orderStatusEnum = pgEnum("order_status", [
   "completed",
@@ -57,7 +55,7 @@ export const products = snakeCase.table("products", {
     .references(() => inventoryItems.itemId),
   productName: varchar().notNull(),
   sku: varchar().notNull().unique(),
-  price: numeric().notNull(),
+  price: integer().notNull(),
 });
 
 export const inventory = snakeCase.table("inventory", {
@@ -76,7 +74,7 @@ export const inventoryTransactions = snakeCase.table("inventory_transactions", {
     .references(() => inventoryItems.itemId),
   changeQuantity: integer().notNull(),
   reason: inventoryTransactionReasonEnum().notNull(),
-  referenceId: integer(),
+  referenceId: uuid(),
   createdAt: timestamp().defaultNow(),
 });
 
@@ -92,39 +90,30 @@ export const inventoryTransactions = snakeCase.table("inventory_transactions", {
 // });
 
 export const orders = snakeCase.table("orders", {
-  orderId: serial().primaryKey(),
+  orderId: uuid().primaryKey().defaultRandom(),
   invoice: varchar().notNull().unique(),
-  customerId: integer().references(() => customers.customerId),
-  status: orderStatusEnum().default("pending"),
-  grandTotal: numeric({ precision: 10, scale: 2 }),
-  createdAt: timestamp().defaultNow(),
+  customerId: uuid()
+    .references(() => customers.customerId)
+    .notNull(),
+  status: orderStatusEnum().default("pending").notNull(),
+  grandTotal: integer().notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 export const orderItems = snakeCase.table("order_items", {
-  orderItemId: serial().primaryKey(),
-  orderId: integer()
+  orderItemId: uuid().primaryKey().notNull().defaultRandom(),
+  orderId: uuid()
     .notNull()
     .references(() => orders.orderId, { onDelete: "cascade" }),
   sku: varchar()
     .notNull()
     .references(() => products.sku),
   quantity: integer().notNull(),
-  unitPrice: numeric({ precision: 10, scale: 2 }).notNull(),
-  lineTotal: numeric({ precision: 10, scale: 2 }).notNull(),
+  unitPrice: integer().notNull(),
+  lineTotal: integer().notNull(),
 });
 
 export const customers = snakeCase.table("customers", {
-  customerId: serial().primaryKey(),
-  name: varchar({ length: 150 }).notNull(),
+  customerId: uuid().primaryKey().notNull().defaultRandom(),
+  customerName: varchar({ length: 150 }).notNull(),
 });
-
-export const insertOrdersSchema = createInsertSchema(orders);
-export const insertCustomerSchema = createInsertSchema(customers);
-export const insertOrderItemsSchema = createInsertSchema(orderItems);
-export const ordersSchema = z.object({
-  order: insertOrdersSchema,
-  items: z.array(insertOrderItemsSchema),
-  customer: insertCustomerSchema,
-});
-export const createProductsSchema = createSelectSchema(products);
-export type Products = z.infer<typeof createProductsSchema>;

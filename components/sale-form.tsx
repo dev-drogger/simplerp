@@ -1,6 +1,7 @@
 "use client";
 
-import { ordersSchema } from "@/db/schema";
+import { v4 as uuidv4 } from "uuid";
+import { OrderItems, Customer } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { z } from "zod";
@@ -27,15 +28,22 @@ import {
   SelectItem,
   SelectGroup,
 } from "./ui/select";
+import { useGetProductsQuery } from "@/services/database";
+import { ordersSchema } from "@/lib/validation";
+import { usePlaceOrder } from "@/hooks/use-place-order";
 
 const SaleForm = () => {
-  const form = useForm<z.infer<typeof ordersSchema>>({
-    resolver: zodResolver(ordersSchema),
-    defaultValues: {
-      order: { status: "pending" },
-      items: [{ sku: "", quantity: 0 }],
-    },
-  });
+  const { data: products, isLoading, error } = useGetProductsQuery();
+
+  // const placeOrderForm = useForm<z.infer<typeof ordersSchema>>({
+  //   resolver: zodResolver(ordersSchema),
+  //   defaultValues: {
+  //     order: { status: "pending" },
+  //     items: [{ sku: "", quantity: 0 }],
+  //   },
+  // });
+
+  const { onSubmitOrder, placeOrderForm } = usePlaceOrder();
 
   const saleStatuses = [
     "completed",
@@ -45,30 +53,58 @@ const SaleForm = () => {
     "pending",
   ];
 
-  const products = [
-    {
-      sku: "NPGEISHA",
-      name: "Geisha",
-      price: 69999,
-      category: "women",
-    },
-    {
-      sku: "NPHANA",
-      name: "Hana",
-      price: 69999,
-      category: "women",
-    },
-  ];
-
   const { fields, append, remove } = useFieldArray({
-    control: form.control,
+    control: placeOrderForm.control,
     name: "items",
   });
 
-  const onSubmit = (data: z.infer<typeof ordersSchema>) => {};
+  // const value = placeOrderForm.getValues();
+  // const orderId = uuidv4();
+  // const createOrderItems = () => {
+  //   return value.items.map((item) => {
+  //     const price = products?.find((p) => p.sku === item.sku).price;
+  //     return {
+  //       orderItemId: uuidv4(),
+  //       orderId: orderId,
+  //       sku: item.sku,
+  //       quantity: item.quantity,
+  //       unitPrice: price,
+  //       lineTotal: price * item.quantity,
+  //     };
+  //   });
+  // };
+
+  // const createOrder = (orderItems: OrderItems[], customer: Customer) => {
+  //   let grandTotal = 0;
+  //   orderItems.forEach((item) => {
+  //     grandTotal += item.lineTotal;
+  //   });
+  //   return {
+  //     orderId: orderId,
+  //     invoice: value.order.invoice,
+  //     customerId: customer.customerId,
+  //     status: value.order.status,
+  //     grandTotal: grandTotal,
+  //   };
+  // };
+
+  // const createCustomer = () => {
+  //   return {
+  //     customerId: uuidv4(),
+  //     customerName: value.customer.customerName,
+  //   };
+  // };
+
+  // const onSubmit = (data?) => {
+  //   const orderItems = createOrderItems();
+  //   const customer = createCustomer();
+  //   const order = createOrder(orderItems, customer);
+
+  //   console.log(orderItems, customer, order);
+  // };
   return (
     <Dialog>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <form onSubmit={placeOrderForm.handleSubmit(onSubmitOrder)}>
         <DialogTrigger asChild>
           <Button>
             <PlusIcon />
@@ -85,7 +121,7 @@ const SaleForm = () => {
           <FieldGroup>
             <Controller
               name="order.invoice"
-              control={form.control}
+              control={placeOrderForm.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <Label htmlFor="order.invoice">Invoice</Label>
@@ -103,13 +139,13 @@ const SaleForm = () => {
               )}
             />
             <Controller
-              name="customer.name"
-              control={form.control}
+              name="customer.customerName"
+              control={placeOrderForm.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <Label htmlFor="customer.name">Customer</Label>
                   <Input
-                    id="customer.name"
+                    id="customer.customerName"
                     {...field}
                     aria-invalid={fieldState.invalid}
                     placeholder="Customer name"
@@ -123,7 +159,7 @@ const SaleForm = () => {
             />
             <Controller
               name="order.status"
-              control={form.control}
+              control={placeOrderForm.control}
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
                   <Label htmlFor="order.status">Status</Label>
@@ -151,7 +187,7 @@ const SaleForm = () => {
             {fields.map((field, index) => (
               <div key={field.id} className="flex items-center gap-2">
                 <Controller
-                  control={form.control}
+                  control={placeOrderForm.control}
                   name={`items.${index}.sku`}
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
@@ -161,11 +197,12 @@ const SaleForm = () => {
 
                       <SelectContent>
                         <SelectGroup>
-                          {products.map((product) => (
-                            <SelectItem key={product.sku} value={product.sku}>
-                              {product.name}
-                            </SelectItem>
-                          ))}
+                          {products &&
+                            products.map((product) => (
+                              <SelectItem key={product.sku} value={product.sku}>
+                                {product.productName}
+                              </SelectItem>
+                            ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
@@ -175,7 +212,7 @@ const SaleForm = () => {
                 <span className="text-muted-foreground">@</span>
 
                 <Controller
-                  control={form.control}
+                  control={placeOrderForm.control}
                   name={`items.${index}.quantity`}
                   render={({ field }) => (
                     <Input
@@ -201,9 +238,10 @@ const SaleForm = () => {
               type="button"
               onClick={() =>
                 append({
-                  orderId: 0,
-                  unitPrice: "",
-                  lineTotal: "",
+                  orderItemId: "",
+                  orderId: "",
+                  unitPrice: 0,
+                  lineTotal: 0,
                   sku: "",
                   quantity: 0,
                 })
@@ -216,7 +254,8 @@ const SaleForm = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">Save changes</Button>
+            {/* <Button type="submit">Save changes</Button> */}
+            <Button onClick={() => onSubmitOrder()}>Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </form>

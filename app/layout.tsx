@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import ReduxProvider from "@/redux/redux-provider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -34,25 +36,25 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <div className="[--header-height:calc(--spacing(14))]">
-          <TooltipProvider>
-            <SidebarProvider className="flex flex-col">
-              <SiteHeader />
-              <div className="flex flex-1">
-                <AppSidebar />
-                {/* <SidebarInset>
-                  <div className="flex flex-1 flex-col gap-4 p-4">
-                    <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                      <div className="aspect-video rounded-xl bg-muted/50" />
-                      <div className="aspect-video rounded-xl bg-muted/50" />
-                      <div className="aspect-video rounded-xl bg-muted/50" />
-                    </div>
-                    <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
-                  </div>
-                </SidebarInset> */}
-                {children}
-              </div>
-            </SidebarProvider>
-          </TooltipProvider>
+          <ReduxProvider>
+            <TooltipProvider>
+              <SidebarProvider className="flex flex-col">
+                <SiteHeader />
+                <div className="flex flex-1">
+                  <AppSidebar />
+                  <main className="flex-1">{children}</main>
+                  <Toaster
+                    richColors
+                    position="top-center"
+                    offset={120}
+                    mobileOffset={100}
+                    className="fixed z-50 top"
+                    expand={true}
+                  />
+                </div>
+              </SidebarProvider>
+            </TooltipProvider>
+          </ReduxProvider>
         </div>
       </body>
     </html>

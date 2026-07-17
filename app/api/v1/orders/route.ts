@@ -1,8 +1,8 @@
-import { fetchProducts } from "@/db/actions/products";
+import { fetchOrders } from "@/db/actions/orders";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async (request: NextRequest) => {
-  const result = await fetchProducts();
+  const result = await fetchOrders();
 
   return result.match(
     (res) => {
@@ -12,7 +12,7 @@ export const GET = async (request: NextRequest) => {
       const type = err.type;
 
       switch (type) {
-        case "DB_PRODUCTS_RETRIEVAL_ERROR": {
+        case "DB_ORDERS_RETRIEVAL_ERROR": {
           return NextResponse.json(err, { status: 404 });
         }
         case "DATABASE_ERROR": {
