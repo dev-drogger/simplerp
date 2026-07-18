@@ -1,4 +1,3 @@
-import * as schema from "@/db/schema";
 import * as validation from "@/lib/validation";
 import { z } from "zod";
 
@@ -27,7 +26,7 @@ export const payments: Payment[] = [
 
 type PaymentStatus = "pending" | "processing" | "success" | "failed";
 
-type OrderReturnType = {
+type OrderSummary = {
   orderId: string;
   date: Date;
   invoice: string;
@@ -54,6 +53,10 @@ export type InventoryTransaction = z.infer<
 >;
 
 export type OrderItems = z.infer<typeof validation.selectOrderItemsSchema>;
-export type Orders = z.infer<typeof validation.selectOrdersSchema>;
+export type Order = z.infer<typeof validation.selectOrdersSchema>;
 export type Customer = z.infer<typeof validation.selectCustomerSchema>;
 export type Product = z.infer<typeof validation.selectProductsSchema>;
+export type InputOrder = z.infer<typeof validation.inputOrderSchema>;
+export type PlaceOrder = z.infer<typeof validation.placeOrderSchema>;
+
+export type DatabaseActionReturnType = { ok: boolean; message: string };

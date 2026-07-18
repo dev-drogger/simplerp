@@ -8,12 +8,15 @@ import {
   CreateProductsError,
   UpdateProductsError,
   DeleteProductsError,
-  GetOrdersError,
-  CreateOrdersError,
+  GetOrderError,
+  CreateOrderError,
 } from "@/types.error";
-import { Orders, OrderReturnType } from "@/types";
+import { Order, OrderSummary } from "@/types";
 
-export const fetchOrders = (): ResultAsync<OrderReturnType[], GetOrdersError> =>
+export const fetchOrderSummary = (): ResultAsync<
+  OrderSummary[],
+  GetOrderError
+> =>
   ResultAsync.fromPromise(
     db
       .select({
@@ -66,27 +69,27 @@ export const fetchOrders = (): ResultAsync<OrderReturnType[], GetOrdersError> =>
     const products = rows;
     if (!products[0])
       return err({
-        type: "DB_ORDERS_RETRIEVAL_ERROR" as const,
+        type: "DB_ORDER_RETRIEVAL_ERROR" as const,
         error: "We couldn't find any order",
       });
     return ok(products);
   });
 
-// export const insertOrders = (
-//   payload: schema.Orders,
-// ): ResultAsync<{ ok: boolean; message: string }, CreateOrdersError> =>
-//   ResultAsync.fromPromise(
-//     db.insert(schema.orders).values(payload).returning(),
-//     () => ({
-//       type: "DATABASE_ERROR" as const,
-//       error: "Unexpected error",
-//     }),
-//   ).andThen((rows) => {
-//     const [result] = rows;
-//     if (!result)
-//       return err({
-//         type: "DB_ORDERS_CREATION_ERROR" as const,
-//         error: "We couldn't find any order",
-//       });
-//     return ok({ ok: true, message: "created" });
-//   });
+export const insertOrder = (
+  order: Order,
+): ResultAsync<{ ok: boolean; message: string }, CreateOrderError> =>
+  ResultAsync.fromPromise(
+    db.insert(schema.orders).values(order).returning(),
+    () => ({
+      type: "DATABASE_ERROR" as const,
+      error: "Unexpected error",
+    }),
+  ).andThen((rows) => {
+    const [result] = rows;
+    if (!result)
+      return err({
+        type: "DB_ORDER_CREATION_ERROR" as const,
+        error: "We couldn't find any order",
+      });
+    return ok({ ok: true, message: "created" });
+  });

@@ -15,21 +15,21 @@ export type DeleteProductsError = {
   error: string;
 };
 
-export type GetOrdersError = {
-  type: "DB_ORDERS_RETRIEVAL_ERROR" | "DATABASE_ERROR";
+export type GetOrderError = {
+  type: "DB_ORDER_RETRIEVAL_ERROR" | "DATABASE_ERROR";
   error: string;
 };
 
-export type CreateOrdersError = {
-  type: "DB_ORDERS_CREATION_ERROR" | "DATABASE_ERROR";
+export type CreateOrderError = {
+  type: "DB_ORDER_CREATION_ERROR" | "DATABASE_ERROR";
   error: string;
 };
-export type UpdateOrdersError = {
-  type: "DB_ORDERS_UPDATE_ERROR" | "DATABASE_ERROR";
+export type UpdateOrderError = {
+  type: "DB_ORDER_UPDATE_ERROR" | "DATABASE_ERROR";
   error: string;
 };
-export type DeleteOrdersError = {
-  type: "DB_ORDERS_DELETION_ERROR" | "DATABASE_ERROR";
+export type DeleteOrderError = {
+  type: "DB_ORDER_DELETION_ERROR" | "DATABASE_ERROR";
   error: string;
 };
 
@@ -102,3 +102,7 @@ export type DeleteOrderItemsError = {
   type: "DB_ORDER_ITEMS_DELETION_ERROR" | "DATABASE_ERROR";
   error: string;
 };
+export type PlaceOrderError =
+  | CreateOrderItemsError
+  | CreateCustomerError
+  | CreateOrderError;

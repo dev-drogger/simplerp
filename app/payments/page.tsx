@@ -10,7 +10,7 @@ import { useGetOrdersQuery } from "@/services/database";
 
 export default async function DemoPage() {
   // const { data } = useGetOrdersQuery();
-  const response = await fetch("http://localhost:3000/api/v1/orders");
+  const response = await fetch("http://localhost:3000/api/v1/order");
   const data = await response.json();
   console.log(data);
 
