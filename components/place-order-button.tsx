@@ -26,11 +26,20 @@ import {
 } from "./ui/select";
 import { useGetProductsQuery } from "@/services/database";
 import { usePlaceOrder } from "@/hooks/use-place-order";
+import { AppError, GetProductsError } from "@/types.error";
+import { handleErrorToast } from "./handle-error-toast";
+import { useEffect } from "react";
 
-const OrderForm = () => {
-  const { data: products, isLoading, error } = useGetProductsQuery();
+const PlaceOrderButton = () => {
+  const { data: products, error } = useGetProductsQuery();
 
   const { onSubmitOrder, inputOrderForm, open, setOpen } = usePlaceOrder();
+
+  useEffect(() => {
+    if (!error) return;
+    handleErrorToast<AppError<GetProductsError>>(error);
+    return;
+  }, [error]);
 
   const saleStatuses = [
     "completed",
@@ -47,7 +56,7 @@ const OrderForm = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <form onSubmit={inputOrderForm.handleSubmit(onSubmitOrder)}>
+      <form onSubmit={onSubmitOrder}>
         <DialogTrigger asChild>
           <Button>
             <PlusIcon />
@@ -128,43 +137,64 @@ const OrderForm = () => {
             />
 
             {fields.map((field, index) => (
-              <div key={field.id} className="flex items-center gap-2">
+              <div key={field.id} className="flex items-end gap-2">
                 <Controller
                   control={inputOrderForm.control}
                   name={`items.${index}.sku`}
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger className="w-64">
-                        <SelectValue placeholder="Select product" />
-                      </SelectTrigger>
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <Label htmlFor="items.sku">Product</Label>
 
-                      <SelectContent>
-                        <SelectGroup>
-                          {products &&
-                            products.map((product) => (
-                              <SelectItem key={product.sku} value={product.sku}>
-                                {product.productName}
-                              </SelectItem>
-                            ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-64">
+                          <SelectValue placeholder="Select product" />
+                        </SelectTrigger>
+
+                        <SelectContent>
+                          <SelectGroup>
+                            {products &&
+                              products.map((product) => (
+                                <SelectItem
+                                  key={product.sku}
+                                  value={product.sku}
+                                >
+                                  {product.productName}
+                                </SelectItem>
+                              ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
                   )}
                 />
 
-                <span className="text-muted-foreground">@</span>
+                {/* <span className="text-muted-foreground">@</span> */}
 
                 <Controller
                   control={inputOrderForm.control}
                   name={`items.${index}.quantity`}
-                  render={({ field }) => (
-                    <Input
-                      type="number"
-                      min={1}
-                      className="w-24"
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
+                  render={({ field, fieldState }) => (
+                    <Field data-invalid={fieldState.invalid}>
+                      <Label htmlFor="items.quantity">Quantity</Label>
+
+                      <Input
+                        type="number"
+                        min={1}
+                        className="w-24"
+                        {...field}
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        aria-invalid={fieldState.invalid}
+                      />
+                      {fieldState.invalid && (
+                        <FieldError errors={[fieldState.error]} />
+                      )}
+                    </Field>
                   )}
                 />
 
@@ -193,8 +223,7 @@ const OrderForm = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            {/* <Button type="submit">Save changes</Button> */}
-            <Button onClick={() => onSubmitOrder()}>Save changes</Button>
+            <Button type="submit">Save changes</Button>
           </DialogFooter>
         </DialogContent>
       </form>
@@ -202,4 +231,4 @@ const OrderForm = () => {
   );
 };
 
-export default OrderForm;
+export default PlaceOrderButton;

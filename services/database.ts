@@ -26,9 +26,14 @@ export const databaseApi = createApi({
         url: "/v1/order",
         method: "POST",
         body: placeOrderForm,
+        invalidatesTags: ["OrderSummary"],
       }),
     }),
   }),
 });
 
-export const { useGetProductsQuery, useGetOrdersQuery } = databaseApi;
+export const {
+  useGetProductsQuery,
+  useGetOrdersQuery,
+  useCreateOrderMutation,
+} = databaseApi;

@@ -7,7 +7,7 @@ import {
 import { z } from "zod";
 
 export const inputOrderSchema = z.object({
-  invoice: z.string().startsWith("INV"),
+  invoice: z.string().startsWith("INV", "Invoice should starts with 'INV'"),
   customerName: z.string(),
   status: z.enum(["completed", "shipped", "cancelled", "returned", "pending"]),
   items: z
@@ -25,16 +25,22 @@ export const inputOrderSchema = z.object({
         if (item.quantity <= 0) {
           ctx.addIssue({
             code: "custom",
-            message: "Quantity must be greater than 0",
+            message: "Minimum quantity is 1",
             path: [index, "quantity"],
           });
         }
 
-        // Check duplicate SKU
         if (skuSet.has(item.sku)) {
           ctx.addIssue({
             code: "custom",
             message: "SKU must be unique",
+            path: [index, "sku"],
+          });
+        }
+        if (item.sku == "") {
+          ctx.addIssue({
+            code: "custom",
+            message: "Please select a product",
             path: [index, "sku"],
           });
         }
@@ -75,7 +81,13 @@ export const insertProductsSchema = createInsertSchema(schema.products);
 export const updateProductsSchema = createUpdateSchema(schema.products);
 
 export const placeOrderSchema = z.object({
-  order: insertOrdersSchema,
-  items: z.array(insertOrderItemsSchema),
-  customer: insertCustomerSchema,
+  order: createSelectSchema(schema.orders, {
+    createdAt: z.date().optional(),
+  }),
+  items: z.array(
+    createSelectSchema(schema.orderItems, {
+      orderItemId: z.string().optional(),
+    }),
+  ),
+  customer: selectCustomerSchema,
 });

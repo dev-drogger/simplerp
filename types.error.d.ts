@@ -102,7 +102,10 @@ export type DeleteOrderItemsError = {
   type: "DB_ORDER_ITEMS_DELETION_ERROR" | "DATABASE_ERROR";
   error: string;
 };
+
 export type PlaceOrderError =
   | CreateOrderItemsError
   | CreateCustomerError
   | CreateOrderError;
+
+export type AppError<T> = AccessError | T;

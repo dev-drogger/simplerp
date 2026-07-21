@@ -1,101 +1,96 @@
 import { useState } from "react";
-import { useGetProductsQuery } from "@/services/database";
+import {
+  useGetProductsQuery,
+  useCreateOrderMutation,
+} from "@/services/database";
 import { v4 as uuidv4 } from "uuid";
-import z from "zod";
 import { toast } from "sonner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import {
-  inputOrderSchema,
-  insertOrdersSchema,
-  placeOrderSchema,
-} from "@/lib/validation";
+import { inputOrderSchema, placeOrderSchema } from "@/lib/validation";
+import type { InputOrder } from "@/types";
+import { useEffect } from "react";
+import { handleErrorToast } from "@/components/handle-error-toast";
+import { AppError, GetOrderError, PlaceOrderError } from "@/types.error";
 
 export const usePlaceOrder = () => {
-  const placeOrderForm = useForm<z.infer<typeof placeOrderSchema>>({
-    resolver: zodResolver(placeOrderSchema),
-    defaultValues: {
-      items: [{ sku: "", quantity: 0 }],
-    },
-  });
-  const inputOrderForm = useForm<z.infer<typeof inputOrderSchema>>({
+  const inputOrderForm = useForm<InputOrder>({
     resolver: zodResolver(inputOrderSchema),
     defaultValues: {
       status: "pending",
       items: [{ sku: "", quantity: 0 }],
     },
   });
-  const { data: products } = useGetProductsQuery();
 
+  const { data: products, error: productsError } = useGetProductsQuery();
+  const [createOrder, { isLoading: isSubmitting, error }] =
+    useCreateOrderMutation();
   const [open, setOpen] = useState(false);
 
-  const createOrderItems = (orderId: string) => {
-    if (!products || !products[0]) return [];
-    const formValue = inputOrderForm.getValues();
-    return formValue.items.map((item) => {
+  useEffect(() => {
+    if (!error) return;
+    handleErrorToast<AppError<PlaceOrderError>>(error);
+    return;
+  }, [error]);
+  useEffect(() => {
+    if (!productsError) return;
+    handleErrorToast<AppError<GetOrderError>>(productsError);
+    return;
+  }, [productsError]);
+
+  const buildOrderPayload = (orderId: string, values: InputOrder) => {
+    if (!products || !products.length) return;
+
+    const items = values.items.map((item) => {
       const product = products.find((p) => p.sku === item.sku);
-      const price = product!.price;
+      if (!product) {
+        throw new Error(`Product not found for SKU: ${item.sku}`);
+      }
       return {
-        orderItemId: uuidv4(),
-        orderId: orderId,
+        orderId,
         sku: item.sku,
         quantity: item.quantity,
-        unitPrice: price,
-        lineTotal: price * item.quantity,
+        unitPrice: product.price,
+        lineTotal: product.price * item.quantity,
       };
     });
-  };
 
-  const createOrder = (orderId: string) => {
-    const formValue = inputOrderForm.getValues();
-    const orderItems = createOrderItems(orderId);
-
-    placeOrderForm.setValue("items", orderItems);
-
-    const customer = {
-      customerId: uuidv4(),
-      customerName: formValue.customerName,
-    };
-    placeOrderForm.setValue("customer", customer);
-
-    const grandTotal = orderItems.reduce((sum, i) => sum + i.lineTotal, 0);
+    const grandTotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
+    const customerId = uuidv4();
 
     return {
-      orderId: orderId,
-      invoice: formValue.invoice,
-      customerId: customer.customerId,
-      status: formValue.status,
-      grandTotal: grandTotal,
+      order: {
+        orderId,
+        invoice: values.invoice,
+        customerId,
+        status: values.status,
+        grandTotal,
+      },
+      items,
+      customer: {
+        customerId,
+        customerName: values.customerName,
+      },
     };
   };
 
-  const onSubmitOrder = async () => {
-    const orderId = uuidv4();
+  const onSubmitOrder = inputOrderForm.handleSubmit(async (values) => {
+    try {
+      const payload = buildOrderPayload(uuidv4(), values);
 
-    const inputOrderFormValue = inputOrderForm.getValues();
+      const parsed = placeOrderSchema.safeParse(payload);
+      if (!parsed.success) {
+        toast.error(parsed.error.issues[0]?.message ?? "Invalid order");
+        return;
+      }
 
-    const parsedInputOrderForm =
-      inputOrderSchema.safeParse(inputOrderFormValue);
+      await createOrder(parsed.data).unwrap();
 
-    if (!parsedInputOrderForm.success) return toast.error("error");
+      toast.success("New order placed!");
+      setOpen(false);
+      inputOrderForm.reset();
+    } catch {}
+  });
 
-    const order = createOrder(orderId);
-
-    const parsedOrder = insertOrdersSchema.safeParse(order);
-
-    if (!parsedOrder.success) return toast.error("error");
-
-    placeOrderForm.setValue("order", parsedOrder.data);
-
-    const placeOrderFormValue = placeOrderForm.getValues();
-    const parsedPlaceOrderFormValue =
-      placeOrderSchema.safeParse(placeOrderFormValue);
-
-    if (!parsedPlaceOrderFormValue.success) return toast.error("error");
-
-    toast.success("Successfully place a new order");
-    setOpen(!open);
-  };
-
-  return { onSubmitOrder, placeOrderForm, inputOrderForm, open, setOpen };
+  return { onSubmitOrder, inputOrderForm, open, setOpen, isSubmitting };
 };

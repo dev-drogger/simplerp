@@ -20,8 +20,8 @@ export const fetchOrderSummary = (): ResultAsync<
   ResultAsync.fromPromise(
     db
       .select({
-        customerName: schema.customers.customerName,
         orderId: schema.orders.orderId,
+        customerName: schema.customers.customerName,
         invoice: schema.orders.invoice,
         date: schema.orders.createdAt,
         amount: schema.orders.grandTotal,
@@ -54,8 +54,8 @@ export const fetchOrderSummary = (): ResultAsync<
         eq(schema.orderItems.sku, schema.products.sku),
       )
       .groupBy(
-        schema.customers.customerName,
         schema.orders.orderId,
+        schema.customers.customerName,
         schema.orders.invoice,
         schema.orders.createdAt,
         schema.orders.grandTotal,
