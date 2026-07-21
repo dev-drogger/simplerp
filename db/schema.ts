@@ -6,6 +6,7 @@ import {
   timestamp,
   snakeCase,
   uuid,
+  numeric,
 } from "drizzle-orm/pg-core";
 
 export const orderStatusEnum = pgEnum("order_status", [
@@ -34,7 +35,7 @@ export const inventoryTransactionReasonEnum = pgEnum(
 );
 
 export const inventoryItems = snakeCase.table("inventory_items", {
-  itemId: integer("item_id").primaryKey(),
+  itemId: integer().primaryKey(),
   name: varchar("name", { length: 150 }).notNull(),
   type: itemTypeEnum("type").notNull(),
 });
@@ -62,8 +63,12 @@ export const inventory = snakeCase.table("inventory", {
   itemId: integer()
     .primaryKey()
     .references(() => inventoryItems.itemId),
-  quantityOnHand: integer().notNull().default(0),
-  quantityReserved: integer().notNull().default(0),
+  quantityOnHand: numeric("quantity_on_hand", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
+  quantityReserved: numeric("quantity_reserved", { precision: 10, scale: 2 })
+    .notNull()
+    .default("0"),
   status: stockStatusEnum().notNull().default("in_stock"),
 });
 

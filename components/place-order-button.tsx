@@ -56,20 +56,20 @@ const PlaceOrderButton = () => {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <form onSubmit={onSubmitOrder}>
-        <DialogTrigger asChild>
-          <Button>
-            <PlusIcon />
-            New Sale
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-sm">
-          <DialogHeader>
-            <DialogTitle>Add new sale</DialogTitle>
-            <DialogDescription>
-              Fill in the details for the new sale.
-            </DialogDescription>
-          </DialogHeader>
+      <DialogTrigger asChild>
+        <Button>
+          <PlusIcon />
+          New Sale
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-sm">
+        <DialogHeader>
+          <DialogTitle>Add new sale</DialogTitle>
+          <DialogDescription>
+            Fill in the details for the new sale.
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={onSubmitOrder}>
           <FieldGroup>
             <Controller
               name="invoice"
@@ -106,32 +106,6 @@ const PlaceOrderButton = () => {
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
-                </Field>
-              )}
-            />
-            <Controller
-              name="status"
-              control={inputOrderForm.control}
-              render={({ field, fieldState }) => (
-                <Field data-invalid={fieldState.invalid}>
-                  <Label htmlFor="status">Status</Label>
-
-                  <Select
-                    value={field.value ?? "pending"}
-                    onValueChange={field.onChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-
-                    <SelectContent>
-                      {saleStatuses.map((status) => (
-                        <SelectItem key={status} value={status}>
-                          {status.charAt(0).toUpperCase() + status.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                 </Field>
               )}
             />
@@ -225,8 +199,8 @@ const PlaceOrderButton = () => {
             </DialogClose>
             <Button type="submit">Save changes</Button>
           </DialogFooter>
-        </DialogContent>
-      </form>
+        </form>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -1,9 +1,9 @@
 "use client";
 
-import { OrderReturnType } from "@/types";
+import { OrderSummary } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 
-export const columns: ColumnDef<OrderReturnType>[] = [
+export const OrderColumns: ColumnDef<OrderSummary>[] = [
   {
     accessorKey: "date",
     header: "Date",

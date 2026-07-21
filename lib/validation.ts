@@ -9,7 +9,7 @@ import { z } from "zod";
 export const inputOrderSchema = z.object({
   invoice: z.string().startsWith("INV", "Invoice should starts with 'INV'"),
   customerName: z.string(),
-  status: z.enum(["completed", "shipped", "cancelled", "returned", "pending"]),
+  // status: z.enum(["completed", "shipped", "cancelled", "returned", "pending"]),
   items: z
     .array(
       z.object({

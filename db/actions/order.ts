@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle";
 import * as schema from "@/db/schema";
 import { ResultAsync, ok, err } from "neverthrow";
-import { eq, sql, inArray, and, InferSelectModel } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 
 import {
   GetProductsError,

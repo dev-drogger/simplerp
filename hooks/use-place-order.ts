@@ -2,6 +2,7 @@ import { useState } from "react";
 import {
   useGetProductsQuery,
   useCreateOrderMutation,
+  useUpdateInventoryMutation,
 } from "@/services/database";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -11,13 +12,20 @@ import { inputOrderSchema, placeOrderSchema } from "@/lib/validation";
 import type { InputOrder } from "@/types";
 import { useEffect } from "react";
 import { handleErrorToast } from "@/components/handle-error-toast";
-import { AppError, GetOrderError, PlaceOrderError } from "@/types.error";
+import {
+  AppError,
+  GetOrderError,
+  PlaceOrderError,
+  UpdateInventoryError,
+} from "@/types.error";
+import { UpdateInventory } from "./update-inventory";
 
 export const usePlaceOrder = () => {
   const inputOrderForm = useForm<InputOrder>({
     resolver: zodResolver(inputOrderSchema),
     defaultValues: {
-      status: "pending",
+      invoice: "",
+      customerName: "",
       items: [{ sku: "", quantity: 0 }],
     },
   });
@@ -25,6 +33,8 @@ export const usePlaceOrder = () => {
   const { data: products, error: productsError } = useGetProductsQuery();
   const [createOrder, { isLoading: isSubmitting, error }] =
     useCreateOrderMutation();
+  const [updateInventory, { error: updateInventoryError }] =
+    useUpdateInventoryMutation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -37,6 +47,11 @@ export const usePlaceOrder = () => {
     handleErrorToast<AppError<GetOrderError>>(productsError);
     return;
   }, [productsError]);
+  // useEffect(() => {
+  //   if (!updateInventoryError) return;
+  //   handleErrorToast<AppError<UpdateInventoryError>>(updateInventoryError);
+  //   return;
+  // }, [updateInventoryError]);
 
   const buildOrderPayload = (orderId: string, values: InputOrder) => {
     if (!products || !products.length) return;
@@ -63,7 +78,7 @@ export const usePlaceOrder = () => {
         orderId,
         invoice: values.invoice,
         customerId,
-        status: values.status,
+        status: "pending",
         grandTotal,
       },
       items,
@@ -84,7 +99,11 @@ export const usePlaceOrder = () => {
         return;
       }
 
-      await createOrder(parsed.data).unwrap();
+      const materials = UpdateInventory(parsed.data.items);
+
+      const orderResult = await createOrder(parsed.data).unwrap();
+
+      if (orderResult.ok) await updateInventory(materials);
 
       toast.success("New order placed!");
       setOpen(false);

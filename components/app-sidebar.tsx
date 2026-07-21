@@ -38,7 +38,7 @@ const data = {
   navMain: [
     {
       title: "Inventory",
-      url: "#",
+      url: "/inventory",
       icon: Box,
       isActive: true,
       items: [
@@ -61,8 +61,8 @@ const data = {
       ],
     },
     {
-      title: "Sales",
-      url: "#",
+      title: "Orders",
+      url: "/orders",
       icon: Bot,
       items: [
         {

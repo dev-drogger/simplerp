@@ -1,5 +1,6 @@
 import * as validation from "@/lib/validation";
 import { z } from "zod";
+import { itemTypeEnum, stockStatusEnum } from "./db/schema";
 
 type Payment = {
   id: string;
@@ -39,6 +40,15 @@ type OrderSummary = {
   amount: number;
 };
 
+type InventorySummary = {
+  itemId: number;
+  name: string;
+  quantityOnHand: string;
+  quantityReserved: string;
+  type: ItemType;
+  status: StockStatus;
+};
+
 type SaleStatus =
   | "completed"
   | "shipped"
@@ -58,5 +68,13 @@ export type Customer = z.infer<typeof validation.selectCustomerSchema>;
 export type Product = z.infer<typeof validation.selectProductsSchema>;
 export type InputOrder = z.infer<typeof validation.inputOrderSchema>;
 export type PlaceOrder = z.infer<typeof validation.placeOrderSchema>;
+export type ItemType = z.infer<typeof itemTypeEnum>;
+export type StockStatus = z.infer<typeof stockStatusEnum>;
+
+export type ReserveQuantity = {
+  itemId: number;
+  amount: number;
+}[];
 
 export type DatabaseActionReturnType = { ok: boolean; message: string };
+export type NewPlaceOrder = PlaceOrder & ReserveQuantity;

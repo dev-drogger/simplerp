@@ -109,3 +109,9 @@ export type PlaceOrderError =
   | CreateOrderError;
 
 export type AppError<T> = AccessError | T;
+
+export type NewPlaceOrderError =
+  | CreateOrderItemsError
+  | CreateCustomerError
+  | CreateOrderError
+  | UpdateInventoryError;
