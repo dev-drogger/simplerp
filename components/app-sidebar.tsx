@@ -11,7 +11,6 @@ import {
   PieChart,
   Send,
   Settings2,
-  SquareTerminal,
   Box,
 } from "lucide-react";
 
@@ -156,7 +155,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       variant="floating"
       {...props}
     >
-      <SidebarHeader>
+      <SidebarHeader className="bg-muted rounded-t-lg">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
@@ -165,20 +164,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">Acme Inc</span>
-                  <span className="truncate text-xs">Enterprise</span>
+                  <span className="truncate font-medium">Nayanaka Perfume</span>
+                  {/* <span className="truncate text-xs">Enterprise</span> */}
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className="bg-muted">
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className="bg-white rounded-b-lg">
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>

@@ -32,6 +32,17 @@ export const databaseApi = createApi({
       }),
       invalidatesTags: ["OrderSummary"],
     }),
+    deleteOrder: builder.mutation<
+      DatabaseActionReturnType,
+      { orderId: string; materials: ReserveQuantity }
+    >({
+      query: (payload) => ({
+        url: "/v1/order",
+        method: "delete",
+        body: payload,
+      }),
+      invalidatesTags: ["OrderSummary"],
+    }),
     updateInventory: builder.mutation<
       DatabaseActionReturnType,
       ReserveQuantity
@@ -50,4 +61,5 @@ export const {
   useGetOrdersQuery,
   useCreateOrderMutation,
   useUpdateInventoryMutation,
+  useDeleteOrderMutation,
 } = databaseApi;

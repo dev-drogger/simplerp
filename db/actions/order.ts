@@ -3,15 +3,8 @@ import * as schema from "@/db/schema";
 import { ResultAsync, ok, err } from "neverthrow";
 import { eq, sql } from "drizzle-orm";
 
-import {
-  GetProductsError,
-  CreateProductsError,
-  UpdateProductsError,
-  DeleteProductsError,
-  GetOrderError,
-  CreateOrderError,
-} from "@/types.error";
-import { Order, OrderSummary } from "@/types";
+import { GetOrderError } from "@/types.error";
+import { OrderSummary } from "@/types";
 
 export const fetchOrderSummary = (): ResultAsync<
   OrderSummary[],
@@ -73,23 +66,4 @@ export const fetchOrderSummary = (): ResultAsync<
         error: "We couldn't find any order",
       });
     return ok(products);
-  });
-
-export const insertOrder = (
-  order: Order,
-): ResultAsync<{ ok: boolean; message: string }, CreateOrderError> =>
-  ResultAsync.fromPromise(
-    db.insert(schema.orders).values(order).returning(),
-    () => ({
-      type: "DATABASE_ERROR" as const,
-      error: "Unexpected error",
-    }),
-  ).andThen((rows) => {
-    const [result] = rows;
-    if (!result)
-      return err({
-        type: "DB_ORDER_CREATION_ERROR" as const,
-        error: "We couldn't find any order",
-      });
-    return ok({ ok: true, message: "created" });
   });

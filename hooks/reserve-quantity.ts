@@ -1,7 +1,7 @@
 import { INVENTORY_ITEMS, recipeA } from "@/lib";
 import { OrderItems, ReserveQuantity } from "@/types";
 
-export const UpdateInventory = (items: OrderItems[]) => {
+export const reserveQuantity = (items: OrderItems[]) => {
   const recipe = recipeA;
   const recipeXQ = items.reduce<Record<string, number>>((acc, item) => {
     Object.entries(recipe).forEach(([material, amountPerUnit]) => {

@@ -15,7 +15,7 @@ import {
 import { Field, FieldGroup, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusIcon, Trash2Icon } from "lucide-react";
+import { Check, PlusIcon, Trash2Icon } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -41,14 +41,6 @@ const PlaceOrderButton = () => {
     return;
   }, [error]);
 
-  const saleStatuses = [
-    "completed",
-    "shipped",
-    "cancelled",
-    "returned",
-    "pending",
-  ];
-
   const { fields, append, remove } = useFieldArray({
     control: inputOrderForm.control,
     name: "items",
@@ -59,7 +51,7 @@ const PlaceOrderButton = () => {
       <DialogTrigger asChild>
         <Button>
           <PlusIcon />
-          New Sale
+          New Order
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
@@ -172,13 +164,23 @@ const PlaceOrderButton = () => {
                   )}
                 />
 
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => remove(index)}
-                >
-                  <Trash2Icon />
-                </Button>
+                {index > 0 ? (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => remove(index)}
+                  >
+                    <Trash2Icon />
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    className="opacity-0"
+                  >
+                    <Trash2Icon />
+                  </Button>
+                )}
               </div>
             ))}
             <Button
@@ -197,7 +199,9 @@ const PlaceOrderButton = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit">
+              <Check className="text-green-500" /> Add
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

@@ -1,5 +1,5 @@
 import { fetchOrderSummary } from "@/db/actions/order";
-import { insertPlaceOrder } from "@/db/actions/place-order";
+import { deletePlacedOrder, insertPlaceOrder } from "@/db/actions/place-order";
 import { placeOrderSchema } from "@/lib/validation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -52,6 +52,7 @@ export const POST = async (req: NextRequest) => {
         case "DB_CUSTOMER_CREATION_ERROR":
         case "DB_ORDER_CREATION_ERROR":
         case "DB_ORDER_ITEMS_CREATION_ERROR":
+        case "DB_INVENTORY_UPDATE_ERROR":
           return NextResponse.json(err, { status: 500 });
 
         case "DATABASE_ERROR":
@@ -66,4 +67,24 @@ export const POST = async (req: NextRequest) => {
 
 // export const PUT = async (req: NextRequest) => {};
 
-// export const DELETE = async (req: NextRequest) => {};
+export const DELETE = async (request: NextRequest) => {
+  const body = await request.json();
+  const result = await deletePlacedOrder(body);
+
+  return result.match(
+    (data) => NextResponse.json(data, { status: 201 }),
+    (err) => {
+      switch (err.type) {
+        case "DB_ORDER_DELETION_ERROR":
+        case "DB_INVENTORY_UPDATE_ERROR":
+          return NextResponse.json(err, { status: 500 });
+
+        case "DATABASE_ERROR":
+          return NextResponse.json(err, { status: 500 });
+
+        default:
+          throw new Error(`Unhandled error: ${err satisfies never}`);
+      }
+    },
+  );
+};

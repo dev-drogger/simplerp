@@ -106,12 +106,35 @@ export type DeleteOrderItemsError = {
 export type PlaceOrderError =
   | CreateOrderItemsError
   | CreateCustomerError
-  | CreateOrderError;
+  | CreateOrderError
+  | UpdateInventoryError;
+
+export type DeletePlacedOrderError = DeleteOrderError | UpdateInventoryError;
 
 export type AppError<T> = AccessError | T;
 
-export type NewPlaceOrderError =
-  | CreateOrderItemsError
-  | CreateCustomerError
+export type DatabaseError =
+  | GetProductsError
+  | GetOrderError
+  | GetInventoryError
+  | GetInventoryTransactionError
+  | GetCustomerError
+  | GetOrderItemsError
+  | CreateProductsError
   | CreateOrderError
-  | UpdateInventoryError;
+  | CreateInventoryError
+  | CreateInventoryTransactionError
+  | CreateCustomerError
+  | CreateOrderItemsError
+  | UpdateProductsError
+  | UpdateOrderError
+  | UpdateInventoryError
+  | UpdateInventoryTransactionError
+  | UpdateCustomerError
+  | UpdateOrderItemsError
+  | DeleteProductsError
+  | DeleteOrderError
+  | DeleteInventoryError
+  | DeleteInventoryTransactionError
+  | DeleteCustomerError
+  | DeleteOrderItemsError;

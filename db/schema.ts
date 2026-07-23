@@ -7,6 +7,7 @@ import {
   snakeCase,
   uuid,
   numeric,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 export const orderStatusEnum = pgEnum("order_status", [
@@ -73,7 +74,7 @@ export const inventory = snakeCase.table("inventory", {
 });
 
 export const inventoryTransactions = snakeCase.table("inventory_transactions", {
-  transactionId: serial().primaryKey(),
+  inventoryTransactionId: serial().primaryKey(),
   itemId: integer()
     .notNull()
     .references(() => inventoryItems.itemId),
@@ -83,16 +84,14 @@ export const inventoryTransactions = snakeCase.table("inventory_transactions", {
   createdAt: timestamp().defaultNow(),
 });
 
-// export const billOfMaterials = snakeCase.table("bill_of_materials", {
-//   bomId: serial("bom_id").primaryKey(),
-//   productId: integer("variant_id")
-//     .notNull()
-//     .references(() => products.productId),
-//   componentItemId: integer("component_item_id")
-//     .notNull()
-//     .references(() => inventoryItems.itemId),
-//   quantityRequired: integer("quantity_required").notNull(),
-// });
+export const billOfMaterials = snakeCase.table("bill_of_materials", {
+  bomId: uuid().primaryKey().defaultRandom(),
+  orderId: uuid()
+    .notNull()
+    .references(() => orders.orderId, { onDelete: "cascade" }),
+  materials: jsonb().notNull(),
+  createdAt: timestamp().defaultNow(),
+});
 
 export const orders = snakeCase.table("orders", {
   orderId: uuid().primaryKey().defaultRandom(),

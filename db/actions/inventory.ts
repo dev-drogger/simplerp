@@ -95,8 +95,7 @@ export const updateInventory = (
       }
       return result;
     }),
-    (e) => {
-      console.log(e);
+    () => {
       return {
         type: "DATABASE_ERROR" as const,
         error: "Unexpected error",

@@ -1,7 +1,7 @@
 "use client";
 
 import { SidebarIcon } from "lucide-react";
-
+import { usePathname, useSearchParams } from "next/navigation";
 // import { SearchForm } from "@/components/search-form";
 import {
   Breadcrumb,
@@ -17,6 +17,7 @@ import { useSidebar } from "@/components/ui/sidebar";
 
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
+  const pathname = usePathname();
 
   return (
     <header className="fixed top-0 z-50 flex w-full items-center border-b bg-background">
@@ -33,11 +34,13 @@ export function SiteHeader() {
         <Breadcrumb className="hidden sm:block">
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Build Your Application</BreadcrumbLink>
+              <BreadcrumbLink href="/">Nayanaka Perfume</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+              <BreadcrumbPage>
+                {pathname.slice(1).charAt(0).toUpperCase() + pathname.slice(2)}
+              </BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>

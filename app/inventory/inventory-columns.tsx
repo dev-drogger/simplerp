@@ -14,22 +14,50 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-
 export const InventoryColumns: ColumnDef<InventorySummary>[] = [
-  { accessorKey: "name", header: "Item Name" },
+  {
+    accessorKey: "name",
+    header: ({ column }) => (
+      <div
+        className="font-semibold"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Item Name
+      </div>
+    ),
+  },
   {
     accessorKey: "quantityOnHand",
-    header: "Quantity On Hand",
+    header: ({ column }) => (
+      <div
+        className="font-semibold"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Quantity On Hand
+      </div>
+    ),
   },
   {
     accessorKey: "quantityReserved",
-    header: "QuantityReserved",
+    header: ({ column }) => (
+      <div
+        className="font-semibold"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        QuantityReserved
+      </div>
+    ),
   },
   {
     accessorKey: "type",
-    header: "Type",
+    header: ({ column }) => (
+      <div
+        className="font-semibold"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Type
+      </div>
+    ),
     cell: ({ row }) => {
       const type = row.getValue("type") as string;
 
@@ -45,7 +73,14 @@ export const InventoryColumns: ColumnDef<InventorySummary>[] = [
   },
   {
     accessorKey: "status",
-    header: "Status",
+    header: ({ column }) => (
+      <div
+        className="font-semibold"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Status
+      </div>
+    ),
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
 
@@ -59,32 +94,32 @@ export const InventoryColumns: ColumnDef<InventorySummary>[] = [
       );
     },
   },
-  // {
-  //   id: "actions",
-  //   cell: ({ row }) => {
-  //     const payment = row.original;
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const payment = row.original;
 
-  //     return (
-  //       <DropdownMenu>
-  //         <DropdownMenuTrigger asChild>
-  //           <Button variant="ghost" className="h-8 w-8 p-0">
-  //             <span className="sr-only">Open menu</span>
-  //             <MoreHorizontal className="h-4 w-4" />
-  //           </Button>
-  //         </DropdownMenuTrigger>
-  //         <DropdownMenuContent align="end">
-  //           <DropdownMenuLabel>Actions</DropdownMenuLabel>
-  //           <DropdownMenuItem
-  //             onClick={() => navigator.clipboard.writeText(payment.id)}
-  //           >
-  //             Copy payment ID
-  //           </DropdownMenuItem>
-  //           <DropdownMenuSeparator />
-  //           <DropdownMenuItem>View customer</DropdownMenuItem>
-  //           <DropdownMenuItem>View payment details</DropdownMenuItem>
-  //         </DropdownMenuContent>
-  //       </DropdownMenu>
-  //     );
-  //   },
-  // },
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() => navigator.clipboard.writeText(payment.name)}
+            >
+              Copy payment ID
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>View customer</DropdownMenuItem>
+            <DropdownMenuItem>View payment details</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      );
+    },
+  },
 ];

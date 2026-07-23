@@ -77,4 +77,3 @@ export type ReserveQuantity = {
 }[];
 
 export type DatabaseActionReturnType = { ok: boolean; message: string };
-export type NewPlaceOrder = PlaceOrder & ReserveQuantity;

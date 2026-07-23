@@ -2,7 +2,6 @@ import { useState } from "react";
 import {
   useGetProductsQuery,
   useCreateOrderMutation,
-  useUpdateInventoryMutation,
 } from "@/services/database";
 import { v4 as uuidv4 } from "uuid";
 import { toast } from "sonner";
@@ -12,13 +11,8 @@ import { inputOrderSchema, placeOrderSchema } from "@/lib/validation";
 import type { InputOrder } from "@/types";
 import { useEffect } from "react";
 import { handleErrorToast } from "@/components/handle-error-toast";
-import {
-  AppError,
-  GetOrderError,
-  PlaceOrderError,
-  UpdateInventoryError,
-} from "@/types.error";
-import { UpdateInventory } from "./update-inventory";
+import { AppError, GetOrderError, PlaceOrderError } from "@/types.error";
+import { reserveQuantity } from "./reserve-quantity";
 
 export const usePlaceOrder = () => {
   const inputOrderForm = useForm<InputOrder>({
@@ -33,8 +27,6 @@ export const usePlaceOrder = () => {
   const { data: products, error: productsError } = useGetProductsQuery();
   const [createOrder, { isLoading: isSubmitting, error }] =
     useCreateOrderMutation();
-  const [updateInventory, { error: updateInventoryError }] =
-    useUpdateInventoryMutation();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -47,11 +39,6 @@ export const usePlaceOrder = () => {
     handleErrorToast<AppError<GetOrderError>>(productsError);
     return;
   }, [productsError]);
-  // useEffect(() => {
-  //   if (!updateInventoryError) return;
-  //   handleErrorToast<AppError<UpdateInventoryError>>(updateInventoryError);
-  //   return;
-  // }, [updateInventoryError]);
 
   const buildOrderPayload = (orderId: string, values: InputOrder) => {
     if (!products || !products.length) return;
@@ -62,6 +49,7 @@ export const usePlaceOrder = () => {
         throw new Error(`Product not found for SKU: ${item.sku}`);
       }
       return {
+        orderItemId: uuidv4(),
         orderId,
         sku: item.sku,
         quantity: item.quantity,
@@ -73,7 +61,7 @@ export const usePlaceOrder = () => {
     const grandTotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
     const customerId = uuidv4();
 
-    return {
+    const order = {
       order: {
         orderId,
         invoice: values.invoice,
@@ -87,6 +75,15 @@ export const usePlaceOrder = () => {
         customerName: values.customerName,
       },
     };
+
+    const materials = reserveQuantity(order.items);
+
+    const finalOrder = {
+      ...order,
+      reserveQuantity: materials,
+    };
+
+    return finalOrder;
   };
 
   const onSubmitOrder = inputOrderForm.handleSubmit(async (values) => {
@@ -99,11 +96,7 @@ export const usePlaceOrder = () => {
         return;
       }
 
-      const materials = UpdateInventory(parsed.data.items);
-
-      const orderResult = await createOrder(parsed.data).unwrap();
-
-      if (orderResult.ok) await updateInventory(materials);
+      await createOrder(parsed.data).unwrap();
 
       toast.success("New order placed!");
       setOpen(false);

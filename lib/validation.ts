@@ -9,7 +9,6 @@ import { z } from "zod";
 export const inputOrderSchema = z.object({
   invoice: z.string().startsWith("INV", "Invoice should starts with 'INV'"),
   customerName: z.string(),
-  // status: z.enum(["completed", "shipped", "cancelled", "returned", "pending"]),
   items: z
     .array(
       z.object({
@@ -90,4 +89,10 @@ export const placeOrderSchema = z.object({
     }),
   ),
   customer: selectCustomerSchema,
+  reserveQuantity: z.array(
+    z.object({
+      itemId: z.number(),
+      amount: z.number(),
+    }),
+  ),
 });
