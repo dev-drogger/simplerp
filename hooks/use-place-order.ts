@@ -11,7 +11,7 @@ import { inputOrderSchema, placeOrderSchema } from "@/lib/validation";
 import type { InputOrder } from "@/types";
 import { useEffect } from "react";
 import { handleErrorToast } from "@/components/handle-error-toast";
-import { AppError, GetOrderError, PlaceOrderError } from "@/types.error";
+import { AppError, PlaceOrderError } from "@/types.error";
 import { reserveQuantity } from "./reserve-quantity";
 
 export const usePlaceOrder = () => {
@@ -24,7 +24,7 @@ export const usePlaceOrder = () => {
     },
   });
 
-  const { data: products, error: productsError } = useGetProductsQuery();
+  const { data: products } = useGetProductsQuery();
   const [createOrder, { isLoading: isSubmitting, error }] =
     useCreateOrderMutation();
   const [open, setOpen] = useState(false);
@@ -34,11 +34,6 @@ export const usePlaceOrder = () => {
     handleErrorToast<AppError<PlaceOrderError>>(error);
     return;
   }, [error]);
-  useEffect(() => {
-    if (!productsError) return;
-    handleErrorToast<AppError<GetOrderError>>(productsError);
-    return;
-  }, [productsError]);
 
   const buildOrderPayload = (orderId: string, values: InputOrder) => {
     if (!products || !products.length) return;

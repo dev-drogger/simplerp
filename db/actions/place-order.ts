@@ -1,83 +1,10 @@
-import {} from "drizzle-orm/errors";
 import { db } from "@/db/drizzle";
 import * as schema from "@/db/schema";
-import { ResultAsync, err, ok } from "neverthrow";
+import { ResultAsync } from "neverthrow";
 import { DatabaseActionReturnType, PlaceOrder, ReserveQuantity } from "@/types";
-import {
-  DatabaseError,
-  DeletePlacedOrderError,
-  PlaceOrderError,
-} from "@/types.error";
+import { DeletePlacedOrderError, PlaceOrderError } from "@/types.error";
 import { eq, sql } from "drizzle-orm";
-
-const TABLE_TO_ERROR: Record<string, PlaceOrderError> = {
-  customers: {
-    type: "DB_CUSTOMER_CREATION_ERROR" as const,
-    error: "We couldn't add this customer",
-  },
-  orders: {
-    type: "DB_ORDER_CREATION_ERROR" as const,
-    error: "We couldn't add this order",
-  },
-  order_items: {
-    type: "DB_ORDER_ITEMS_CREATION_ERROR" as const,
-    error: "We couldn't add the order items",
-  },
-  inventory: {
-    type: "DB_INVENTORY_UPDATE_ERROR" as const,
-    error: "We couldn't update the inventory",
-  },
-};
-const TEST: Record<string, DeletePlacedOrderError> = {
-  orders: {
-    type: "DB_ORDER_DELETION_ERROR" as const,
-    error: "We couldn't delete this order",
-  },
-  inventory: {
-    type: "DB_INVENTORY_UPDATE_ERROR" as const,
-    error: "We couldn't update the inventory",
-  },
-};
-
-const parseDatabaseError = (e: unknown): string | undefined => {
-  if (
-    typeof e === "object" &&
-    e !== null &&
-    "cause" in e &&
-    typeof e.cause === "object" &&
-    e.cause !== null &&
-    "table" in e.cause
-  ) {
-    return String((e.cause as { table: unknown }).table);
-  }
-  return undefined;
-};
-
-export function errorMapper<T extends { type: string; error: string }>(
-  e: unknown,
-  tableMap: Record<string, T>,
-): T {
-  const table = parseDatabaseError(e);
-  const mapped = table ? tableMap[table] : undefined;
-  return (
-    mapped ??
-    ({
-      type: "DATABASE_ERROR",
-      error: "Unexpected error",
-    } as T)
-  );
-}
-
-export const mapDatabaseError = (e: unknown): PlaceOrderError => {
-  const table = parseDatabaseError(e);
-  const mapped = table ? TABLE_TO_ERROR[table] : undefined;
-  return (
-    mapped ?? {
-      type: "DATABASE_ERROR",
-      error: "Unexpected error",
-    }
-  );
-};
+import { DatabaseError, mapDatabaseError } from "@/lib/utils";
 
 export const insertPlaceOrder = ({
   order,
@@ -91,62 +18,70 @@ export const insertPlaceOrder = ({
         .insert(schema.customers)
         .values(customer)
         .returning();
-      if (!customerRow) return tx.rollback();
+      if (!customerRow)
+        throw new DatabaseError<PlaceOrderError>({
+          type: "DB_CUSTOMER_CREATION_ERROR" as const,
+          error: "We couldn't add this customer",
+        });
 
       const [orderRow] = await tx
         .insert(schema.orders)
         .values(order)
         .returning();
-      if (!orderRow) return tx.rollback();
+      if (!orderRow)
+        throw new DatabaseError<PlaceOrderError>({
+          type: "DB_ORDER_CREATION_ERROR" as const,
+          error: "We couldn't add the order",
+        });
 
       const orderItemsRows = await tx
         .insert(schema.orderItems)
         .values(items)
         .returning();
-      if (!orderItemsRows[0]) return tx.rollback();
+      if (!orderItemsRows[0])
+        throw new DatabaseError<PlaceOrderError>({
+          type: "DB_ORDER_ITEMS_CREATION_ERROR" as const,
+          error: "We couldn't add the order items",
+        });
 
-      const inventoryRows = [];
       for (const item of reserveQuantity) {
+        const [lockedRow] = await tx
+          .select()
+          .from(schema.inventory)
+          .where(eq(schema.inventory.itemId, item.itemId))
+          .for("update");
+
+        if (!lockedRow)
+          throw new DatabaseError<PlaceOrderError>({
+            type: "DB_INVENTORY_RETRIEVAL_ERROR" as const,
+            error: "We couldn't find the item",
+          });
+
+        const newReserved = parseInt(lockedRow.quantityReserved) + item.amount;
+
+        if (newReserved > parseInt(lockedRow.quantityOnHand))
+          throw new DatabaseError<PlaceOrderError>({
+            type: "QUANTITY_RESERVED_EXCEED" as const,
+            error: `Out of stock. Only ${newReserved - parseInt(lockedRow.quantityOnHand)} product available.`,
+          });
+
         const [row] = await tx
           .update(schema.inventory)
-          .set({
-            quantityReserved: sql`${schema.inventory.quantityReserved} + ${item.amount}`,
-          })
+          .set({ quantityReserved: String(newReserved) })
           .where(eq(schema.inventory.itemId, item.itemId))
           .returning();
 
-        if (!row) return tx.rollback();
-
-        inventoryRows.push(row);
+        if (!row)
+          throw new DatabaseError<PlaceOrderError>({
+            type: "DB_INVENTORY_UPDATE_ERROR" as const,
+            error: "We couldn't update the inventory",
+          });
       }
 
-      return { customerRow, orderRow, orderItemsRows, inventoryRows };
+      return { ok: true, message: "created" } as const;
     }),
-    (e) => mapDatabaseError(e),
-  ).andThen(({ customerRow, orderRow, orderItemsRows, inventoryRows }) => {
-    if (!customerRow)
-      return err({
-        type: "DB_CUSTOMER_CREATION_ERROR" as const,
-        error: "We couldn't add this customer",
-      });
-    if (!orderRow)
-      return err({
-        type: "DB_ORDER_CREATION_ERROR" as const,
-        error: "We couldn't add this order",
-      });
-    if (orderItemsRows.length === 0)
-      return err({
-        type: "DB_ORDER_ITEMS_CREATION_ERROR" as const,
-        error: "We couldn't add the order items",
-      });
-    if (inventoryRows.length === 0)
-      return err({
-        type: "DB_INVENTORY_UPDATE_ERROR" as const,
-        error: "We couldn't update the inventory",
-      });
-
-    return ok({ ok: true, message: "created" });
-  });
+    (e) => mapDatabaseError<PlaceOrderError>(e),
+  );
 
 export const deletePlacedOrder = ({
   orderId,
@@ -157,7 +92,6 @@ export const deletePlacedOrder = ({
 }): ResultAsync<DatabaseActionReturnType, DeletePlacedOrderError> =>
   ResultAsync.fromPromise(
     db.transaction(async (tx) => {
-      const inventoryRows = [];
       for (const item of materials) {
         const [row] = await tx
           .update(schema.inventory)
@@ -167,10 +101,11 @@ export const deletePlacedOrder = ({
           .where(eq(schema.inventory.itemId, item.itemId))
           .returning();
 
-        if (!row) {
-          tx.rollback();
-        }
-        inventoryRows.push(row);
+        if (!row)
+          throw new DatabaseError<DeletePlacedOrderError>({
+            type: "DB_INVENTORY_UPDATE_ERROR" as const,
+            error: "We couldn't update the inventory",
+          });
       }
 
       const [orderRow] = await tx
@@ -178,24 +113,13 @@ export const deletePlacedOrder = ({
         .where(eq(schema.orders.orderId, orderId))
         .returning();
 
-      if (!orderRow) {
-        tx.rollback();
-      }
+      if (!orderRow)
+        throw new DatabaseError<DeletePlacedOrderError>({
+          type: "DB_ORDER_DELETION_ERROR" as const,
+          error: "We couldn't delete the order",
+        });
 
-      return { inventoryRows, orderRow };
+      return { ok: true, message: "deleted" } as const;
     }),
-    (e) => errorMapper(e, TEST),
-  ).andThen(({ inventoryRows, orderRow }) => {
-    if (!orderRow)
-      return err({
-        type: "DB_ORDER_DELETION_ERROR" as const,
-        error: "We couldn't add this order",
-      });
-    if (inventoryRows.length === 0)
-      return err({
-        type: "DB_INVENTORY_UPDATE_ERROR" as const,
-        error: "We couldn't update the inventory",
-      });
-
-    return ok({ ok: true, message: "created" });
-  });
+    (e) => mapDatabaseError<DeletePlacedOrderError>(e),
+  );

@@ -13,50 +13,53 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 
 export const InventoryColumns: ColumnDef<InventorySummary>[] = [
   {
     accessorKey: "name",
     header: ({ column }) => (
-      <div
-        className="font-semibold"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Item Name
-      </div>
+      <DataTableColumnHeader column={column} title="Item Name" />
     ),
   },
   {
     accessorKey: "quantityOnHand",
     header: ({ column }) => (
-      <div
-        className="font-semibold"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Quantity On Hand
-      </div>
+      <DataTableColumnHeader column={column} title="Quantity On Hand" />
     ),
+    cell: ({ row }) => {
+      const raw = row.getValue("quantityOnHand");
+      const onHand =
+        typeof raw === "string" ? parseFloat(raw) : (raw as number);
+
+      return (
+        <div>
+          {Number.isInteger(onHand) ? onHand.toString() : onHand.toFixed(2)}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "quantityReserved",
     header: ({ column }) => (
-      <div
-        className="font-semibold"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        QuantityReserved
-      </div>
+      <DataTableColumnHeader column={column} title="Quantity Reserved" />
     ),
+    cell: ({ row }) => {
+      const raw = row.getValue("quantityReserved");
+      const onHand =
+        typeof raw === "string" ? parseFloat(raw) : (raw as number);
+
+      return (
+        <div>
+          {Number.isInteger(onHand) ? onHand.toString() : onHand.toFixed(2)}
+        </div>
+      );
+    },
   },
   {
     accessorKey: "type",
     header: ({ column }) => (
-      <div
-        className="font-semibold"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Type
-      </div>
+      <DataTableColumnHeader column={column} title="Type" />
     ),
     cell: ({ row }) => {
       const type = row.getValue("type") as string;
@@ -74,18 +77,17 @@ export const InventoryColumns: ColumnDef<InventorySummary>[] = [
   {
     accessorKey: "status",
     header: ({ column }) => (
-      <div
-        className="font-semibold"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Status
-      </div>
+      <DataTableColumnHeader
+        column={column}
+        title="Status"
+        className="justify-end"
+      />
     ),
     cell: ({ row }) => {
       const status = row.getValue("status") as string;
 
       return (
-        <div>
+        <div className="text-right mr-4">
           {status
             .split("_")
             .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -101,8 +103,8 @@ export const InventoryColumns: ColumnDef<InventorySummary>[] = [
 
       return (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
+          <DropdownMenuTrigger asChild className="justify-end">
+            <Button variant="ghost" className="h-8 w-8 p-0 cursor-pointer">
               <span className="sr-only">Open menu</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>

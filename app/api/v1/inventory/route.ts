@@ -1,4 +1,7 @@
-import { fetchInventorySummary, updateInventory } from "@/db/actions/inventory";
+import {
+  fetchInventorySummary,
+  restockInventory,
+} from "@/db/actions/inventory";
 import { NextRequest, NextResponse } from "next/server";
 
 export const GET = async () => {
@@ -28,25 +31,20 @@ export const GET = async () => {
 
 export const PUT = async (request: NextRequest) => {
   const body = await request.json();
-  const result = await updateInventory(body);
+
+  const result = await restockInventory(body);
 
   return result.match(
     (res) => {
-      return NextResponse.json(res, { status: 200 });
+      return NextResponse.json(res, { status: 201 });
     },
     (err) => {
-      const type = err.type;
-
-      switch (type) {
-        case "DB_INVENTORY_UPDATE_ERROR": {
-          return NextResponse.json(err, { status: 404 });
-        }
-        case "DATABASE_ERROR": {
+      switch (err.type) {
+        case "DB_INVENTORY_UPDATE_ERROR":
+        case "DATABASE_ERROR":
           return NextResponse.json(err, { status: 500 });
-        }
-        default: {
-          throw new Error(`Unhandled error: ${type satisfies never}`);
-        }
+        default:
+          throw new Error(`Unhandled error: ${err.type satisfies never}`);
       }
     },
   );

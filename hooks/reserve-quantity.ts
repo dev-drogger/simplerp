@@ -1,7 +1,7 @@
 import { INVENTORY_ITEMS, recipeA } from "@/lib";
-import { OrderItems, ReserveQuantity } from "@/types";
+import { ReserveQuantity } from "@/types";
 
-export const reserveQuantity = (items: OrderItems[]) => {
+export const reserveQuantity = <T extends { quantity: number }>(items: T[]) => {
   const recipe = recipeA;
   const recipeXQ = items.reduce<Record<string, number>>((acc, item) => {
     Object.entries(recipe).forEach(([material, amountPerUnit]) => {

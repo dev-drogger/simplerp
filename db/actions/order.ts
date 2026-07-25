@@ -1,10 +1,31 @@
 import { db } from "@/db/drizzle";
 import * as schema from "@/db/schema";
 import { ResultAsync, ok, err } from "neverthrow";
-import { eq, sql } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 
-import { GetOrderError } from "@/types.error";
-import { OrderSummary } from "@/types";
+import {
+  OrderSummary,
+  OrderStatus,
+  DatabaseActionReturnType,
+  ReserveQuantity,
+} from "@/types";
+import {
+  UpdateOrderError,
+  UpdateInventoryError,
+  GetOrderError,
+} from "@/types.error";
+import { DatabaseError, databaseErrorMapper } from "@/lib/utils";
+
+const TEST: Record<string, UpdateOrderError | UpdateInventoryError> = {
+  orders: {
+    type: "DB_ORDER_UPDATE_ERROR" as const,
+    error: "We couldn't delete this order",
+  },
+  inventory: {
+    type: "DB_INVENTORY_UPDATE_ERROR" as const,
+    error: "We couldn't update the inventory",
+  },
+};
 
 export const fetchOrderSummary = (): ResultAsync<
   OrderSummary[],
@@ -53,7 +74,8 @@ export const fetchOrderSummary = (): ResultAsync<
         schema.orders.createdAt,
         schema.orders.grandTotal,
         schema.orders.status,
-      ),
+      )
+      .orderBy(asc(schema.orders.createdAt)),
     () => ({
       type: "DATABASE_ERROR" as const,
       error: "Unexpected error",
@@ -66,4 +88,85 @@ export const fetchOrderSummary = (): ResultAsync<
         error: "We couldn't find any order",
       });
     return ok(products);
+  });
+
+export const updateOrderStatus = (payload: {
+  orderId: string;
+  status: string;
+  materials: ReserveQuantity;
+}): ResultAsync<
+  DatabaseActionReturnType,
+  UpdateOrderError | UpdateInventoryError
+> =>
+  ResultAsync.fromPromise(
+    db.transaction(async (tx) => {
+      const [orderRow] = await tx
+        .update(schema.orders)
+        .set({ status: payload.status as OrderStatus })
+        .where(eq(schema.orders.orderId, payload.orderId))
+        .returning();
+
+      if (!orderRow)
+        throw new DatabaseError<UpdateOrderError>({
+          type: "DB_ORDER_UPDATE_ERROR",
+          error: "We couldn't update the order status",
+        });
+
+      const inventoryRows = [];
+      for (const item of payload.materials) {
+        let updateValues;
+
+        switch (payload.status) {
+          case "completed":
+            updateValues = {
+              quantityReserved: sql`${schema.inventory.quantityReserved} - ${item.amount}`,
+              quantityOnHand: sql`${schema.inventory.quantityOnHand} - ${item.amount}`,
+            };
+            break;
+
+          case "returned":
+          case "cancelled":
+            updateValues = {
+              quantityReserved: sql`${schema.inventory.quantityReserved} - ${item.amount}`,
+            };
+            break;
+
+          default:
+            throw new Error(`Unsupported status: ${payload.status}`);
+        }
+
+        const [row] = await tx
+          .update(schema.inventory)
+          .set(updateValues)
+          .where(eq(schema.inventory.itemId, item.itemId))
+          .returning();
+
+        if (!row)
+          throw new DatabaseError<UpdateInventoryError>({
+            type: "DB_INVENTORY_UPDATE_ERROR",
+            error: "We couldn't update the inventory",
+          });
+        inventoryRows.push(row);
+      }
+
+      return { inventoryRows, orderRow };
+    }),
+    (e) => databaseErrorMapper(e, TEST),
+  ).andThen((result) => {
+    const { orderRow, inventoryRows } = result as {
+      orderRow: typeof schema.orders.$inferSelect;
+      inventoryRows: (typeof schema.inventory.$inferSelect)[];
+    };
+    if (inventoryRows?.length === 0 && inventoryRows)
+      return err({
+        type: "DB_INVENTORY_UPDATE_ERROR" as const,
+        error: "We couldn't update the inventory",
+      });
+
+    if (!orderRow)
+      return err({
+        type: "DB_ORDER_UPDATE_ERROR" as const,
+        error: "We couldn't find any order",
+      });
+    return ok({ ok: true, message: "updated" });
   });

@@ -1,140 +1,56 @@
-export type GetProductsError = {
-  type: "DB_PRODUCTS_RETRIEVAL_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type CreateProductsError = {
-  type: "DB_PRODUCTS_CREATION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type UpdateProductsError = {
-  type: "DB_PRODUCTS_UPDATE_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type DeleteProductsError = {
-  type: "DB_PRODUCTS_DELETION_ERROR" | "DATABASE_ERROR";
+type DbError<TType extends string> = {
+  type: TType | "DATABASE_ERROR";
   error: string;
 };
 
-export type GetOrderError = {
-  type: "DB_ORDER_RETRIEVAL_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
+export type GetProductsError = DbError<"DB_PRODUCTS_RETRIEVAL_ERROR">;
+export type GetOrderError = DbError<"DB_ORDER_RETRIEVAL_ERROR">;
+export type GetInventoryError = DbError<"DB_INVENTORY_RETRIEVAL_ERROR">;
+export type GetInventoryTransactionError =
+  DbError<"DB_INVENTORY_TRANSACTION_RETRIEVAL_ERROR">;
+export type GetCustomerError = DbError<"DB_CUSTOMER_RETRIEVAL_ERROR">;
+export type GetOrderItemsError = DbError<"DB_ORDER_ITEMS_RETRIEVAL_ERROR">;
+export type GetShippingsError = DbError<"DB_SHIPPING_RETRIEVAL_ERROR">;
 
-export type CreateOrderError = {
-  type: "DB_ORDER_CREATION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type UpdateOrderError = {
-  type: "DB_ORDER_UPDATE_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type DeleteOrderError = {
-  type: "DB_ORDER_DELETION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
+export type CreateProductsError = DbError<"DB_PRODUCTS_CREATION_ERROR">;
+export type CreateOrderError = DbError<"DB_ORDER_CREATION_ERROR">;
+export type CreateInventoryError = DbError<"DB_INVENTORY_CREATION_ERROR">;
+export type CreateInventoryTransactionError =
+  DbError<"DB_INVENTORY_TRANSACTION_CREATION_ERROR">;
+export type CreateCustomerError = DbError<"DB_CUSTOMER_CREATION_ERROR">;
+export type CreateOrderItemsError = DbError<"DB_ORDER_ITEMS_CREATION_ERROR">;
+export type CreateShippingsError = DbError<"DB_SHIPPING_CREATION_ERROR">;
 
-export type GetInventoryError = {
-  type: "DB_INVENTORY_RETRIEVAL_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
+export type DeleteProductsError = DbError<"DB_PRODUCTS_DELETION_ERROR">;
+export type DeleteOrderError = DbError<"DB_ORDER_DELETION_ERROR">;
+export type DeleteInventoryError = DbError<"DB_INVENTORY_DELETION_ERROR">;
+export type DeleteInventoryTransactionError =
+  DbError<"DB_INVENTORY_TRANSACTION_DELETION_ERROR">;
+export type DeleteCustomerError = DbError<"DB_CUSTOMER_DELETION_ERROR">;
+export type DeleteOrderItemsError = DbError<"DB_ORDER_ITEMS_DELETION_ERROR">;
+export type DeleteShippingsError = DbError<"DB_SHIPPING_DELETION_ERROR">;
 
-export type CreateInventoryError = {
-  type: "DB_INVENTORY_CREATION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type UpdateInventoryError = {
-  type: "DB_INVENTORY_UPDATE_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type DeleteInventoryError = {
-  type: "DB_INVENTORY_DELETION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type GetInventoryTransactionError = {
-  type: "DB_INVENTORY_TRANSACTION_RETRIEVAL_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-
-export type CreateInventoryTransactionError = {
-  type: "DB_INVENTORY_TRANSACTION_CREATION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type UpdateInventoryTransactionError = {
-  type: "DB_INVENTORY_TRANSACTION_UPDATE_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type DeleteInventoryTransactionError = {
-  type: "DB_INVENTORY_TRANSACTION_DELETION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-
-export type GetCustomerError = {
-  type: "DB_CUSTOMER_RETRIEVAL_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-
-export type CreateCustomerError = {
-  type: "DB_CUSTOMER_CREATION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type UpdateCustomerError = {
-  type: "DB_CUSTOMER_UPDATE_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type DeleteCustomerError = {
-  type: "DB_CUSTOMER_DELETION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type GetOrderItemsError = {
-  type: "DB_ORDER_ITEMS_RETRIEVAL_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-
-export type CreateOrderItemsError = {
-  type: "DB_ORDER_ITEMS_CREATION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type UpdateOrderItemsError = {
-  type: "DB_ORDER_ITEMS_UPDATE_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
-export type DeleteOrderItemsError = {
-  type: "DB_ORDER_ITEMS_DELETION_ERROR" | "DATABASE_ERROR";
-  error: string;
-};
+export type UpdateProductsError = DbError<"DB_PRODUCTS_UPDATE_ERROR">;
+export type UpdateOrderError = DbError<"DB_ORDER_UPDATE_ERROR">;
+export type UpdateInventoryError = DbError<"DB_INVENTORY_UPDATE_ERROR">;
+export type UpdateInventoryTransactionError =
+  DbError<"DB_INVENTORY_TRANSACTION_UPDATE_ERROR">;
+export type UpdateCustomerError = DbError<"DB_CUSTOMER_UPDATE_ERROR">;
+export type UpdateOrderItemsError = DbError<"DB_ORDER_ITEMS_UPDATE_ERROR">;
+export type UpdateShippingsError = DbError<"DB_SHIPPING_UPDATE_ERROR">;
 
 export type PlaceOrderError =
   | CreateOrderItemsError
   | CreateCustomerError
   | CreateOrderError
-  | UpdateInventoryError;
+  | UpdateInventoryError
+  | QuantityExceedError
+  | GetInventoryError;
+
+export type QuantityExceedError = {
+  type: "QUANTITY_RESERVED_EXCEED" | "DATABASE_ERROR";
+  error: string;
+};
 
 export type DeletePlacedOrderError = DeleteOrderError | UpdateInventoryError;
-
 export type AppError<T> = AccessError | T;
-
-export type DatabaseError =
-  | GetProductsError
-  | GetOrderError
-  | GetInventoryError
-  | GetInventoryTransactionError
-  | GetCustomerError
-  | GetOrderItemsError
-  | CreateProductsError
-  | CreateOrderError
-  | CreateInventoryError
-  | CreateInventoryTransactionError
-  | CreateCustomerError
-  | CreateOrderItemsError
-  | UpdateProductsError
-  | UpdateOrderError
-  | UpdateInventoryError
-  | UpdateInventoryTransactionError
-  | UpdateCustomerError
-  | UpdateOrderItemsError
-  | DeleteProductsError
-  | DeleteOrderError
-  | DeleteInventoryError
-  | DeleteInventoryTransactionError
-  | DeleteCustomerError
-  | DeleteOrderItemsError;

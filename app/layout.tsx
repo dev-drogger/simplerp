@@ -1,10 +1,9 @@
 import localFont from "next/font/local";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/navigation/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import ReduxProvider from "@/redux/redux-provider";

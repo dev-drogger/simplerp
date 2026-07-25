@@ -15,7 +15,7 @@ import {
 import { Field, FieldGroup, FieldError } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Check, PlusIcon, Trash2Icon } from "lucide-react";
+import { Check, Loader2, PlusIcon, Trash2Icon } from "lucide-react";
 import {
   Select,
   SelectTrigger,
@@ -23,17 +23,18 @@ import {
   SelectContent,
   SelectItem,
   SelectGroup,
-} from "./ui/select";
+} from "../ui/select";
 import { useGetProductsQuery } from "@/services/database";
 import { usePlaceOrder } from "@/hooks/use-place-order";
 import { AppError, GetProductsError } from "@/types.error";
-import { handleErrorToast } from "./handle-error-toast";
+import { handleErrorToast } from "../handle-error-toast";
 import { useEffect } from "react";
 
 const PlaceOrderButton = () => {
   const { data: products, error } = useGetProductsQuery();
 
-  const { onSubmitOrder, inputOrderForm, open, setOpen } = usePlaceOrder();
+  const { onSubmitOrder, inputOrderForm, open, setOpen, isSubmitting } =
+    usePlaceOrder();
 
   useEffect(() => {
     if (!error) return;
@@ -49,17 +50,15 @@ const PlaceOrderButton = () => {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
+        <Button className="cursor-pointer">
           <PlusIcon />
           New Order
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Add new sale</DialogTitle>
-          <DialogDescription>
-            Fill in the details for the new sale.
-          </DialogDescription>
+          <DialogTitle>Add new order</DialogTitle>
+          <DialogDescription>Please fill in the details.</DialogDescription>
         </DialogHeader>
         <form onSubmit={onSubmitOrder}>
           <FieldGroup>
@@ -140,8 +139,6 @@ const PlaceOrderButton = () => {
                   )}
                 />
 
-                {/* <span className="text-muted-foreground">@</span> */}
-
                 <Controller
                   control={inputOrderForm.control}
                   name={`items.${index}.quantity`}
@@ -199,8 +196,14 @@ const PlaceOrderButton = () => {
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <Button type="submit">
-              <Check className="text-green-500" /> Add
+            <Button type="submit" disabled={isSubmitting} className="w-20">
+              {isSubmitting ? (
+                <Loader2 className="animate-spin" />
+              ) : (
+                <>
+                  <Check className="text-green-500" /> Add
+                </>
+              )}
             </Button>
           </DialogFooter>
         </form>

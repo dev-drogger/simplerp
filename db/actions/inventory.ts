@@ -8,6 +8,7 @@ import {
 } from "@/types.error";
 import { Inventory, InventorySummary } from "@/types";
 import { eq, sql } from "drizzle-orm";
+import { DatabaseError, mapDatabaseError } from "@/lib/utils";
 
 export const fetchInventory = (): ResultAsync<Inventory[], GetInventoryError> =>
   ResultAsync.fromPromise(db.select().from(schema.inventory), () => ({
@@ -75,39 +76,30 @@ export const insertInventory = (
     return ok({ ok: true, message: "created" });
   });
 
-export const updateInventory = (
+export const restockInventory = (
   payload: { itemId: number; amount: number }[],
-): ResultAsync<{ ok: boolean; message: string }, UpdateInventoryError> => {
-  return ResultAsync.fromPromise(
+): ResultAsync<{ ok: boolean; message: string }, UpdateInventoryError> =>
+  ResultAsync.fromPromise(
     db.transaction(async (tx) => {
       const result = [];
       for (const item of payload) {
         const [row] = await tx
           .update(schema.inventory)
           .set({
-            quantityReserved: sql`${schema.inventory.quantityReserved} + ${item.amount}`,
+            quantityOnHand: sql`${schema.inventory.quantityOnHand} + ${item.amount}`,
           })
           .where(eq(schema.inventory.itemId, item.itemId))
           .returning();
 
-        if (!row) tx.rollback();
+        if (!row)
+          throw new DatabaseError<UpdateInventoryError>({
+            type: "DB_INVENTORY_UPDATE_ERROR",
+            error: "We couldn't update the the inventory",
+          });
         result.push(row);
       }
-      return result;
+
+      return { ok: true, message: "updated" } as const;
     }),
-    () => {
-      return {
-        type: "DATABASE_ERROR" as const,
-        error: "Unexpected error",
-      };
-    },
-  ).andThen((rows) => {
-    const result = rows;
-    if (!result[0])
-      return err({
-        type: "DB_INVENTORY_UPDATE_ERROR" as const,
-        error: "We couldn't input this item",
-      });
-    return ok({ ok: true, message: "created" });
-  });
-};
+    (e) => mapDatabaseError<UpdateInventoryError>(e),
+  );

@@ -96,3 +96,12 @@ export const placeOrderSchema = z.object({
     }),
   ),
 });
+
+export const itemsQuantitySchema = z.object({
+  items: z.array(
+    z.object({
+      itemId: z.number(),
+      amount: z.number(),
+    }),
+  ),
+});

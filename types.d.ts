@@ -1,31 +1,7 @@
 import * as validation from "@/lib/validation";
 import { z } from "zod";
-import { itemTypeEnum, stockStatusEnum } from "./db/schema";
-
-type Payment = {
-  id: string;
-  amount: number;
-  status: "pending" | "processing" | "success" | "failed";
-  email: string;
-};
-
-export const payments: Payment[] = [
-  {
-    id: "728ed52f",
-    amount: 100,
-    status: "pending",
-    email: "m@example.com",
-  },
-  {
-    id: "489e1d42",
-    amount: 125,
-    status: "processing",
-    email: "example@gmail.com",
-  },
-  // ...
-];
-
-type PaymentStatus = "pending" | "processing" | "success" | "failed";
+import { itemTypeEnum, stockStatusEnum, orderStatusEnum } from "./db/schema";
+import { InferEnum } from "drizzle-orm";
 
 type OrderSummary = {
   orderId: string;
@@ -76,4 +52,7 @@ export type ReserveQuantity = {
   amount: number;
 }[];
 
+export type OrderStatus = InferEnum<typeof orderStatusEnum>;
+
 export type DatabaseActionReturnType = { ok: boolean; message: string };
+export type InventoryActions = "restock" | "adjustmen" | "add" | "production";

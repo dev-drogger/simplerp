@@ -12,7 +12,6 @@ import {
 
 export const orderStatusEnum = pgEnum("order_status", [
   "completed",
-  "shipped",
   "cancelled",
   "returned",
   "pending",
@@ -28,6 +27,19 @@ export const stockStatusEnum = pgEnum("stock_status", [
   "in_stock",
   "out_of_stock",
   "discontinued",
+  "low_on_stock",
+]);
+
+export const shippingStatusEnum = pgEnum("shipping_status", [
+  "pending",
+  "processing",
+  "packed",
+  "delivered",
+  "lost",
+  "returned",
+  "cancelled",
+  "on_delivery",
+  "failed_delivery",
 ]);
 
 export const inventoryTransactionReasonEnum = pgEnum(
@@ -71,6 +83,7 @@ export const inventory = snakeCase.table("inventory", {
     .notNull()
     .default("0"),
   status: stockStatusEnum().notNull().default("in_stock"),
+  lowStockThreshold: integer("low_stock_threshold").notNull().default(10),
 });
 
 export const inventoryTransactions = snakeCase.table("inventory_transactions", {
@@ -120,4 +133,13 @@ export const orderItems = snakeCase.table("order_items", {
 export const customers = snakeCase.table("customers", {
   customerId: uuid().primaryKey().notNull().defaultRandom(),
   customerName: varchar({ length: 150 }).notNull(),
+});
+
+export const shippings = snakeCase.table("shippings", {
+  shippingId: uuid().primaryKey().defaultRandom(),
+  deliveryId: varchar(),
+  orderId: uuid()
+    .notNull()
+    .references(() => orders.orderId, { onDelete: "cascade" }),
+  status: shippingStatusEnum("status").notNull(),
 });

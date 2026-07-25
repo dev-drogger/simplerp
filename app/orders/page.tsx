@@ -3,7 +3,7 @@
 import { OrderColumns } from "./order-columns";
 import { OrderDataTable } from "./order-data-table";
 import DataTableHeader from "@/components/ui/data-table-header";
-import PlaceOrderButton from "@/components/place-order-button";
+import PlaceOrderButton from "@/components/order/place-order-button";
 import { useGetOrdersQuery } from "@/services/database";
 import LoadingScreen from "@/components/loading-screen";
 

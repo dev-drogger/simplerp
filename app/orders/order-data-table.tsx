@@ -6,6 +6,7 @@ import {
   SortingState,
   getCoreRowModel,
   getSortedRowModel,
+  getFilteredRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 
@@ -20,6 +21,7 @@ import {
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -31,29 +33,43 @@ export function OrderDataTable<TData, TValue>({
   data,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data,
     columns,
+    getFilteredRowModel: getFilteredRowModel(),
+
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
     state: {
       sorting,
+      globalFilter,
+    },
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: (row, columnId, filterValue) => {
+      const search = filterValue.toLowerCase();
+      const invoice = String(row.getValue("invoice") ?? "").toLowerCase();
+      const customerName = String(
+        row.getValue("customerName") ?? "",
+      ).toLowerCase();
+      return invoice.includes(search) || customerName.includes(search);
     },
   });
 
   return (
     <>
-      <Input
-        placeholder="Filter order..."
-        value={(table.getColumn("invoice")?.getFilterValue() as string) ?? ""}
-        onChange={(event) =>
-          table.getColumn("invoice")?.setFilterValue(event.target.value)
-        }
-        className="max-w-sm"
-      />
+      <div className="flex-row flex gap-2 items-center">
+        <Search className="w-4 h-4" />
+        <Input
+          placeholder="Search invoice or customer..."
+          value={globalFilter ?? ""}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
       <div className="flex flex-col justify-between w-full h-full gap-6">
         <Table className="overflow-hidden rounded-md">
           <TableHeader>
