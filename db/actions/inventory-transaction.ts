@@ -5,7 +5,7 @@ import {
   GetInventoryTransactionError,
   CreateInventoryTransactionError,
 } from "@/types.error";
-import { InventoryTransaction } from "@/types";
+import { DatabaseActionReturnType, InventoryTransaction } from "@/types";
 
 export const fetchInventoryTransaction = (): ResultAsync<
   InventoryTransaction[],
@@ -28,11 +28,8 @@ export const fetchInventoryTransaction = (): ResultAsync<
   });
 
 export const insertInventoryTransaction = (
-  payload: InventoryTransaction,
-): ResultAsync<
-  { ok: boolean; message: string },
-  CreateInventoryTransactionError
-> =>
+  payload: InventoryTransaction[],
+): ResultAsync<DatabaseActionReturnType, CreateInventoryTransactionError> =>
   ResultAsync.fromPromise(
     db.insert(schema.inventoryTransactions).values(payload).returning(),
     () => ({
@@ -40,11 +37,11 @@ export const insertInventoryTransaction = (
       error: "Unexpected error",
     }),
   ).andThen((rows) => {
-    const [result] = rows;
-    if (!result)
+    const result = rows;
+    if (!result[0])
       return err({
         type: "DB_INVENTORY_TRANSACTION_CREATION_ERROR" as const,
-        error: "We couldn't input this item",
+        error: "We couldn't adjust the stock",
       });
     return ok({ ok: true, message: "created" });
   });

@@ -16,14 +16,14 @@ import { useUpdateOrderStatusMutation } from "@/services/database";
 import { useState } from "react";
 import { ORDER_STATUS } from "@/lib";
 import { toast } from "sonner";
-import { reserveQuantity } from "@/hooks/reserve-quantity";
+import { calculateStock } from "@/lib/utils";
 
 const UpdateOrderButton = ({ order }: { order: OrderSummary }) => {
   const [open, setOpen] = useState(false);
   const [updateOrder] = useUpdateOrderStatusMutation();
 
   const handleUpdateOrder = async (status: string) => {
-    const materials = reserveQuantity(order.items);
+    const materials = calculateStock(order.items, true, false);
     const payload = {
       orderId: order.orderId,
       status: status as OrderStatus,

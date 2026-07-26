@@ -10,6 +10,7 @@ type OrderSummary = {
   customerName: string;
   items: {
     productName: string;
+    sku: string;
     quantity: number;
   }[];
   status: SaleStatus;
@@ -35,7 +36,7 @@ type SaleStatus =
 export type Inventory = z.infer<typeof validation.selectInventorySchema>;
 
 export type InventoryTransaction = z.infer<
-  typeof validation.selectInventoryTransactionSchema
+  typeof validation.inventoryTransactionSchema
 >;
 
 export type OrderItems = z.infer<typeof validation.selectOrderItemsSchema>;

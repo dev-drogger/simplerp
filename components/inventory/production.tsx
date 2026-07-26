@@ -15,19 +15,21 @@ import {
 import { Button } from "../ui/button";
 import {
   useGetProductsQuery,
-  useRestockInventoryMutation,
+  useCreateInventoryTransactionMutation,
 } from "@/services/database";
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { InventoryActions } from "@/types";
-import type { Dispatch } from "react";
+import { useEffect, type Dispatch } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { itemsQuantitySchema, productsSchema } from "@/lib/validation";
+import { productsSchema } from "@/lib/validation";
 import { Field, FieldError, FieldGroup } from "../ui/field";
-import { Check, Plus, Trash2Icon } from "lucide-react";
+import { Check, Loader2, Plus, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { produce } from "@/hooks/reserve-quantity";
+import { calculateStock } from "@/lib/utils";
+import { handleErrorToast } from "@/components/handle-error-toast";
+import { AppError, CreateInventoryTransactionError } from "@/types.error";
 
 const Production = ({
   setSelected,
@@ -38,37 +40,45 @@ const Production = ({
 }) => {
   const { data } = useGetProductsQuery();
 
-  const [restock] = useRestockInventoryMutation();
+  const [insertInventoryTransaction, { error, isLoading }] =
+    useCreateInventoryTransactionMutation();
 
-  const restockForm = useForm({
+  useEffect(() => {
+    if (!error) return;
+    handleErrorToast<AppError<CreateInventoryTransactionError>>(error);
+    return;
+  }, [error]);
+
+  const productionForm = useForm({
     resolver: zodResolver(productsSchema),
     defaultValues: {
       products: [{ sku: "", quantity: 0 }],
     },
   });
 
-  const formItems = restockForm.watch("products");
+  const formItems = productionForm.watch("products");
   const { fields, append, remove } = useFieldArray({
-    control: restockForm.control,
+    control: productionForm.control,
     name: "products",
   });
 
-  const handleRestockSubmit = restockForm.handleSubmit(async (values) => {
-    const materials = produce(values.products, true);
-    const invTrans = materials.map((mats) => {
+  const handleRestockSubmit = productionForm.handleSubmit(async (values) => {
+    const materials = calculateStock(values.products, true, true);
+    const inventoryTransactionPayload = materials.map((mats) => {
       return {
         itemId: mats.itemId,
         changeQuantity: mats.amount,
-        reason: "production",
+        reason: "production" as const,
       };
     });
 
-    // try {
-    //   await restock(values).unwrap();
-    //   setOpen(false);
-    //   toast.success("Successfully restocked!");
-    //   restockForm.reset();
-    // } catch {}
+    try {
+      await insertInventoryTransaction(inventoryTransactionPayload).unwrap();
+      setOpen(false);
+      toast.success("Successfully adjusted products stock!");
+      productionForm.reset();
+      setSelected(null);
+    } catch {}
   });
 
   return (
@@ -83,7 +93,7 @@ const Production = ({
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-end gap-2">
               <Controller
-                control={restockForm.control}
+                control={productionForm.control}
                 name={`products.${index}.sku`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
@@ -123,7 +133,7 @@ const Production = ({
               />
 
               <Controller
-                control={restockForm.control}
+                control={productionForm.control}
                 name={`products.${index}.quantity`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
@@ -184,13 +194,22 @@ const Production = ({
         </FieldGroup>
 
         <DialogFooter>
-          <Button onClick={() => setSelected(null)}>Back</Button>
+          <Button onClick={() => setSelected(null)} disabled={isLoading}>
+            Back
+          </Button>
           <Button
             type="submit"
+            disabled={isLoading}
             className="bg-green-500 text-white w-20 hover:bg-green-700"
           >
-            <Check />
-            Save
+            {isLoading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <>
+                <Check />
+                Save
+              </>
+            )}
           </Button>
         </DialogFooter>
       </form>

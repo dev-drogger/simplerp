@@ -32,12 +32,14 @@ export const fetchOrderSummary = (): ResultAsync<
         items: sql<
           {
             productName: string;
+            sku: string;
             quantity: number;
           }[]
         >`
       json_agg(
         json_build_object(
           'productName', ${schema.products.productName},
+          'sku', ${schema.products.sku},
           'quantity', ${schema.orderItems.quantity}
         )
       )

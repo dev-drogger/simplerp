@@ -6,6 +6,7 @@ import {
   ReserveQuantity,
   OrderStatus,
   InventorySummary,
+  InventoryTransaction,
 } from "@/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -71,6 +72,17 @@ export const databaseApi = createApi({
       }),
       invalidatesTags: ["OrderSummary"],
     }),
+    createInventoryTransaction: builder.mutation<
+      DatabaseActionReturnType,
+      InventoryTransaction[]
+    >({
+      query: (payload) => ({
+        url: "v1/production",
+        method: "POST",
+        body: payload,
+      }),
+      invalidatesTags: ["Inventory"],
+    }),
   }),
 });
 
@@ -82,4 +94,5 @@ export const {
   useRestockInventoryMutation,
   useDeleteOrderMutation,
   useUpdateOrderStatusMutation,
+  useCreateInventoryTransactionMutation,
 } = databaseApi;

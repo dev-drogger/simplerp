@@ -1,6 +1,12 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { ERROR_REGISTRY, ErrorRegistryKey } from ".";
+import {
+  ERROR_REGISTRY,
+  ErrorRegistryKey,
+  INVENTORY_ITEMS,
+  PRODUCTION_MATERIALS,
+  RECIPE,
+} from ".";
 type DbAction = "get" | "create" | "delete" | "update";
 
 export function cn(...inputs: ClassValue[]) {
@@ -108,3 +114,26 @@ export function mapDatabaseError<
     ({ type: "DATABASE_ERROR", error: "Unexpected error" } as T)
   );
 }
+
+export const calculateStock = <
+  T extends { sku: keyof typeof RECIPE; quantity: number },
+>(
+  items: T[],
+  release: boolean,
+  production: boolean,
+) => {
+  const totals = items.reduce<Record<string, number>>((acc, item) => {
+    const recipe = production
+      ? PRODUCTION_MATERIALS[item.sku]
+      : RECIPE[item.sku];
+    Object.entries(recipe).forEach(([material, amountPerUnit]) => {
+      acc[material] = (acc[material] ?? 0) + amountPerUnit * item.quantity;
+    });
+    return acc;
+  }, {});
+
+  return Object.entries(totals).map(([material, amount]) => ({
+    itemId: Number(INVENTORY_ITEMS[material as keyof typeof INVENTORY_ITEMS]),
+    amount: release ? -amount : amount,
+  }));
+};

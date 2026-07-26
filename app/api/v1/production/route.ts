@@ -1,11 +1,11 @@
 import { insertInventoryTransaction } from "@/db/actions/inventory-transaction";
 import { NextRequest, NextResponse } from "next/server";
 
-export const PUT = async (request: NextRequest) => {
+export const POST = async (request: NextRequest) => {
   const body = await request.json();
   const result = await insertInventoryTransaction(body);
 
-  result.match(
+  return result.match(
     (data) => NextResponse.json(data, { status: 200 }),
     (err) => {
       switch (err.type) {
@@ -17,6 +17,4 @@ export const PUT = async (request: NextRequest) => {
       }
     },
   );
-
-  return NextResponse.json(result, { status: 200 });
 };

@@ -2,7 +2,6 @@ import { Loader2, Trash2Icon } from "lucide-react";
 import { OrderSummary } from "@/types";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useDeleteOrderMutation } from "@/services/database";
-import { reserveQuantity } from "@/hooks/reserve-quantity";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -14,11 +13,23 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { calculateStock } from "@/lib/utils";
+import { handleErrorToast } from "@/components/handle-error-toast";
+import { AppError, CreateInventoryTransactionError } from "@/types.error";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const DeleteOrderButton = ({ order }: { order: OrderSummary }) => {
-  const [deleteOrder, { isLoading }] = useDeleteOrderMutation();
+  const [open, setOpen] = useState(false);
+  const [deleteOrder, { isLoading, error }] = useDeleteOrderMutation();
 
-  const materials = reserveQuantity(order.items);
+  useEffect(() => {
+    if (!error) return;
+    handleErrorToast<AppError<CreateInventoryTransactionError>>(error);
+    return;
+  }, [error]);
+
+  const materials = calculateStock(order.items, true, false);
 
   const final = {
     orderId: order.orderId,
@@ -26,11 +37,15 @@ const DeleteOrderButton = ({ order }: { order: OrderSummary }) => {
   };
 
   const handleDelete = async () => {
-    await deleteOrder(final);
+    try {
+      await deleteOrder(final);
+      setOpen(false);
+      toast.success("Successfully deleted the order!");
+    } catch {}
   };
 
   return (
-    <AlertDialog>
+    <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
         <DropdownMenuItem
           onSelect={(e) => {
@@ -53,7 +68,7 @@ const DeleteOrderButton = ({ order }: { order: OrderSummary }) => {
           <AlertDialogAction
             disabled={isLoading}
             onClick={handleDelete}
-            className="bg-red-500 text-white hover:bg-red-700 hover:text-white"
+            className="bg-red-500 text-white hover:bg-red-700 hover:text-white w-20"
           >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
