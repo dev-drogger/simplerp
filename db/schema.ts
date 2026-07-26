@@ -44,7 +44,7 @@ export const shippingStatusEnum = pgEnum("shipping_status", [
 
 export const inventoryTransactionReasonEnum = pgEnum(
   "inventory_transaction_reason",
-  ["purchase", "sale", "production", "return", "adjustment", "damage"],
+  ["purchase", "sale", "production", "adjustment", "damaged", "lost"],
 );
 
 export const inventoryItems = snakeCase.table("inventory_items", {

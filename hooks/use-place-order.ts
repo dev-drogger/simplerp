@@ -12,7 +12,7 @@ import type { InputOrder } from "@/types";
 import { useEffect } from "react";
 import { handleErrorToast } from "@/components/handle-error-toast";
 import { AppError, PlaceOrderError } from "@/types.error";
-import { reserveQuantity } from "./reserve-quantity";
+import { newReserveQuantity } from "./reserve-quantity";
 
 export const usePlaceOrder = () => {
   const inputOrderForm = useForm<InputOrder>({
@@ -20,7 +20,7 @@ export const usePlaceOrder = () => {
     defaultValues: {
       invoice: "",
       customerName: "",
-      items: [{ sku: "", quantity: 0 }],
+      products: [{ sku: "", quantity: 0 }],
     },
   });
 
@@ -38,7 +38,7 @@ export const usePlaceOrder = () => {
   const buildOrderPayload = (orderId: string, values: InputOrder) => {
     if (!products || !products.length) return;
 
-    const items = values.items.map((item) => {
+    const orderItems = values.products.map((item) => {
       const product = products.find((p) => p.sku === item.sku);
       if (!product) {
         throw new Error(`Product not found for SKU: ${item.sku}`);
@@ -53,7 +53,7 @@ export const usePlaceOrder = () => {
       };
     });
 
-    const grandTotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
+    const grandTotal = orderItems.reduce((sum, i) => sum + i.lineTotal, 0);
     const customerId = uuidv4();
 
     const order = {
@@ -64,18 +64,18 @@ export const usePlaceOrder = () => {
         status: "pending",
         grandTotal,
       },
-      items,
+      orderItems,
       customer: {
         customerId,
         customerName: values.customerName,
       },
     };
 
-    const materials = reserveQuantity(order.items);
+    const test = newReserveQuantity(values.products);
 
     const finalOrder = {
       ...order,
-      reserveQuantity: materials,
+      reserveQuantity: test,
     };
 
     return finalOrder;
@@ -93,8 +93,8 @@ export const usePlaceOrder = () => {
 
       await createOrder(parsed.data).unwrap();
 
-      toast.success("New order placed!");
       setOpen(false);
+      toast.success("New order placed!");
       inputOrderForm.reset();
     } catch {}
   });

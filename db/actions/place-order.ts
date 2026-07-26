@@ -5,11 +5,12 @@ import { DatabaseActionReturnType, PlaceOrder, ReserveQuantity } from "@/types";
 import { DeletePlacedOrderError, PlaceOrderError } from "@/types.error";
 import { eq, sql } from "drizzle-orm";
 import { DatabaseError, mapDatabaseError } from "@/lib/utils";
+import { adjustReservedStock } from "./stock-adjustment";
 
 export const insertPlaceOrder = ({
   order,
   customer,
-  items,
+  orderItems,
   reserveQuantity,
 }: PlaceOrder): ResultAsync<DatabaseActionReturnType, PlaceOrderError> =>
   ResultAsync.fromPromise(
@@ -36,7 +37,7 @@ export const insertPlaceOrder = ({
 
       const orderItemsRows = await tx
         .insert(schema.orderItems)
-        .values(items)
+        .values(orderItems)
         .returning();
       if (!orderItemsRows[0])
         throw new DatabaseError<PlaceOrderError>({
@@ -44,43 +45,11 @@ export const insertPlaceOrder = ({
           error: "We couldn't add the order items",
         });
 
-      for (const item of reserveQuantity) {
-        const [lockedRow] = await tx
-          .select()
-          .from(schema.inventory)
-          .where(eq(schema.inventory.itemId, item.itemId))
-          .for("update");
-
-        if (!lockedRow)
-          throw new DatabaseError<PlaceOrderError>({
-            type: "DB_INVENTORY_RETRIEVAL_ERROR" as const,
-            error: "We couldn't find the item",
-          });
-
-        const newReserved = parseInt(lockedRow.quantityReserved) + item.amount;
-
-        if (newReserved > parseInt(lockedRow.quantityOnHand))
-          throw new DatabaseError<PlaceOrderError>({
-            type: "QUANTITY_RESERVED_EXCEED" as const,
-            error: `Out of stock. Only ${newReserved - parseInt(lockedRow.quantityOnHand)} product available.`,
-          });
-
-        const [row] = await tx
-          .update(schema.inventory)
-          .set({ quantityReserved: String(newReserved) })
-          .where(eq(schema.inventory.itemId, item.itemId))
-          .returning();
-
-        if (!row)
-          throw new DatabaseError<PlaceOrderError>({
-            type: "DB_INVENTORY_UPDATE_ERROR" as const,
-            error: "We couldn't update the inventory",
-          });
-      }
+      await adjustReservedStock(tx, reserveQuantity);
 
       return { ok: true, message: "created" } as const;
     }),
-    (e) => mapDatabaseError<PlaceOrderError>(e),
+    (e) => mapDatabaseError(e),
   );
 
 export const deletePlacedOrder = ({

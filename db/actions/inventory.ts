@@ -6,7 +6,7 @@ import {
   CreateInventoryError,
   UpdateInventoryError,
 } from "@/types.error";
-import { Inventory, InventorySummary } from "@/types";
+import { Inventory, InventorySummary, ReserveQuantity } from "@/types";
 import { eq, sql } from "drizzle-orm";
 import { DatabaseError, mapDatabaseError } from "@/lib/utils";
 
@@ -76,13 +76,13 @@ export const insertInventory = (
     return ok({ ok: true, message: "created" });
   });
 
-export const restockInventory = (
-  payload: { itemId: number; amount: number }[],
-): ResultAsync<{ ok: boolean; message: string }, UpdateInventoryError> =>
-  ResultAsync.fromPromise(
+export const restockInventory = (payload: {
+  items: ReserveQuantity;
+}): ResultAsync<{ ok: boolean; message: string }, UpdateInventoryError> => {
+  return ResultAsync.fromPromise(
     db.transaction(async (tx) => {
-      const result = [];
-      for (const item of payload) {
+      const { items } = payload;
+      for (const item of items) {
         const [row] = await tx
           .update(schema.inventory)
           .set({
@@ -96,10 +96,10 @@ export const restockInventory = (
             type: "DB_INVENTORY_UPDATE_ERROR",
             error: "We couldn't update the the inventory",
           });
-        result.push(row);
       }
 
       return { ok: true, message: "updated" } as const;
     }),
-    (e) => mapDatabaseError<UpdateInventoryError>(e),
+    (e) => mapDatabaseError(e),
   );
+};

@@ -14,20 +14,24 @@ import { SquarePen } from "lucide-react";
 import { useState } from "react";
 import Restock from "./restock";
 import { InventoryActions } from "@/types";
+import Production from "./production";
 
 const AdjustInventoryButton = () => {
   const [selected, setSelected] = useState<InventoryActions | null>(null);
+  const [open, setOpen] = useState(false);
   const renderInventoryActions = () => {
     switch (selected) {
       case "restock":
-        return <Restock setSelected={setSelected} />;
+        return <Restock setSelected={setSelected} setOpen={setOpen} />;
+      case "production":
+        return <Production setSelected={setSelected} setOpen={setOpen} />;
       default:
         return null;
     }
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
           <SquarePen />
@@ -46,7 +50,9 @@ const AdjustInventoryButton = () => {
 
             <Button onClick={() => setSelected("restock")}>Restock</Button>
             <Button>Add new item</Button>
-            <Button>Production</Button>
+            <Button onClick={() => setSelected("production")}>
+              Production
+            </Button>
             <Button>Adjustment</Button>
           </>
         ) : (

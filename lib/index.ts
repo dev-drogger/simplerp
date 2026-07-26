@@ -9,6 +9,46 @@ export const recipeA = {
   ESA: 19,
   Box: 1,
 };
+
+export const RECIPE = {
+  NPWGEISHA: {
+    Geisha: 1,
+    Box: 1,
+    Pouch: 1,
+    Bubble: 50,
+  },
+  NPWHANA: {
+    Hana: 1,
+    Box: 1,
+    Pouch: 1,
+    Bubble: 50,
+  },
+};
+
+export const PRODUCTION_MATERIALS = {
+  NPWGEISHA: {
+    OPI: 16,
+    VSC: 8,
+    BCC: 4,
+    DPG: 3,
+    ESA: 19,
+    "Geisha Sticker": 1,
+    Bottle: 1,
+    Cap: 1,
+    Geisha: -1,
+  },
+  NPWHANA: {
+    OPI: 18,
+    VSC: 6,
+    LUC: 6,
+    DPG: 3,
+    ESA: 17,
+    "Hana Sticker": 1,
+    Bottle: 1,
+    Cap: 1,
+    Hana: -1,
+  },
+};
 // kalo typenya production product ++ yang lain -- kalo typenya sale semuanya --
 
 export const INVENTORY_ITEMS = {
@@ -24,6 +64,9 @@ export const INVENTORY_ITEMS = {
   Box: 25,
   Geisha: 31,
   Hana: 32,
+  Pouch: 26,
+  Bubble: 27,
+  LUC: 16,
 };
 
 export const ORDER_STATUS = [

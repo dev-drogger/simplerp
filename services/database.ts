@@ -50,9 +50,9 @@ export const databaseApi = createApi({
       }),
       invalidatesTags: ["OrderSummary"],
     }),
-    updateInventory: builder.mutation<
+    restockInventory: builder.mutation<
       DatabaseActionReturnType,
-      ReserveQuantity
+      { items: ReserveQuantity }
     >({
       query: (payload) => ({
         url: "v1/inventory",
@@ -79,7 +79,7 @@ export const {
   useGetOrdersQuery,
   useGetInventoryQuery,
   useCreateOrderMutation,
-  useUpdateInventoryMutation,
+  useRestockInventoryMutation,
   useDeleteOrderMutation,
   useUpdateOrderStatusMutation,
 } = databaseApi;

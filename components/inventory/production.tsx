@@ -14,7 +14,7 @@ import {
 } from "../ui/select";
 import { Button } from "../ui/button";
 import {
-  useGetInventoryQuery,
+  useGetProductsQuery,
   useRestockInventoryMutation,
 } from "@/services/database";
 import { Label } from "../ui/label";
@@ -23,48 +23,58 @@ import { InventoryActions } from "@/types";
 import type { Dispatch } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { itemsQuantitySchema } from "@/lib/validation";
+import { itemsQuantitySchema, productsSchema } from "@/lib/validation";
 import { Field, FieldError, FieldGroup } from "../ui/field";
-import { Check, Trash2Icon } from "lucide-react";
+import { Check, Plus, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
+import { produce } from "@/hooks/reserve-quantity";
 
-const Restock = ({
+const Production = ({
   setSelected,
   setOpen,
 }: {
   setSelected: Dispatch<React.SetStateAction<InventoryActions | null>>;
   setOpen: Dispatch<React.SetStateAction<boolean>>;
 }) => {
-  const { data } = useGetInventoryQuery();
+  const { data } = useGetProductsQuery();
 
   const [restock] = useRestockInventoryMutation();
 
   const restockForm = useForm({
-    resolver: zodResolver(itemsQuantitySchema),
+    resolver: zodResolver(productsSchema),
     defaultValues: {
-      items: [{ itemId: 0, amount: 0 }],
+      products: [{ sku: "", quantity: 0 }],
     },
   });
 
-  const formItems = restockForm.watch("items");
+  const formItems = restockForm.watch("products");
   const { fields, append, remove } = useFieldArray({
     control: restockForm.control,
-    name: "items",
+    name: "products",
   });
 
   const handleRestockSubmit = restockForm.handleSubmit(async (values) => {
-    try {
-      await restock(values).unwrap();
-      setOpen(false);
-      toast.success("Successfully restocked!");
-      restockForm.reset();
-    } catch {}
+    const materials = produce(values.products, true);
+    const invTrans = materials.map((mats) => {
+      return {
+        itemId: mats.itemId,
+        changeQuantity: mats.amount,
+        reason: "production",
+      };
+    });
+
+    // try {
+    //   await restock(values).unwrap();
+    //   setOpen(false);
+    //   toast.success("Successfully restocked!");
+    //   restockForm.reset();
+    // } catch {}
   });
 
   return (
     <>
       <DialogHeader>
-        <DialogTitle>Restock</DialogTitle>
+        <DialogTitle>Production</DialogTitle>
         <DialogDescription>Please fill in the details</DialogDescription>
       </DialogHeader>
 
@@ -74,21 +84,18 @@ const Restock = ({
             <div key={field.id} className="flex items-end gap-2">
               <Controller
                 control={restockForm.control}
-                name={`items.${index}.itemId`}
+                name={`products.${index}.sku`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <Label htmlFor="">Item</Label>
+                    <Label htmlFor="products.sku">Product</Label>
 
-                    <Select
-                      value={String(field.value)}
-                      onValueChange={(e) => field.onChange(Number(e))}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-64">
                         <SelectValue placeholder="Select item">
                           {field.value
-                            ? data?.find((item) => item.itemId === field.value)
-                                ?.name
-                            : "Select item"}
+                            ? data?.find((item) => item.sku === field.value)
+                                ?.productName
+                            : "Select product"}
                         </SelectValue>
                       </SelectTrigger>
 
@@ -98,16 +105,11 @@ const Restock = ({
                             data
                               .filter(
                                 (item) =>
-                                  !formItems.some(
-                                    (i) => i.itemId === item.itemId,
-                                  ) && !item.name.includes("Nayanaka"),
+                                  !formItems.some((i) => i.sku === item.sku),
                               )
                               .map((item) => (
-                                <SelectItem
-                                  key={item.itemId}
-                                  value={String(item.itemId)}
-                                >
-                                  {item.name}
+                                <SelectItem key={item.sku} value={item.sku}>
+                                  {item.productName}
                                 </SelectItem>
                               ))}
                         </SelectGroup>
@@ -122,10 +124,10 @@ const Restock = ({
 
               <Controller
                 control={restockForm.control}
-                name={`items.${index}.amount`}
+                name={`products.${index}.quantity`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <Label htmlFor="items.amount">Quantity</Label>
+                    <Label htmlFor="products.quantity">Quantity</Label>
 
                     <Input
                       required
@@ -171,11 +173,12 @@ const Restock = ({
             type="button"
             onClick={() =>
               append({
-                itemId: 0,
-                amount: 0,
+                sku: "",
+                quantity: 0,
               })
             }
           >
+            <Plus />
             Add More Item
           </Button>
         </FieldGroup>
@@ -195,4 +198,4 @@ const Restock = ({
   );
 };
 
-export default Restock;
+export default Production;

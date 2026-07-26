@@ -14,18 +14,7 @@ import {
   UpdateInventoryError,
   GetOrderError,
 } from "@/types.error";
-import { DatabaseError, databaseErrorMapper } from "@/lib/utils";
-
-const TEST: Record<string, UpdateOrderError | UpdateInventoryError> = {
-  orders: {
-    type: "DB_ORDER_UPDATE_ERROR" as const,
-    error: "We couldn't delete this order",
-  },
-  inventory: {
-    type: "DB_INVENTORY_UPDATE_ERROR" as const,
-    error: "We couldn't update the inventory",
-  },
-};
+import { DatabaseError, mapDatabaseError } from "@/lib/utils";
 
 export const fetchOrderSummary = (): ResultAsync<
   OrderSummary[],
@@ -112,7 +101,6 @@ export const updateOrderStatus = (payload: {
           error: "We couldn't update the order status",
         });
 
-      const inventoryRows = [];
       for (const item of payload.materials) {
         let updateValues;
 
@@ -146,27 +134,9 @@ export const updateOrderStatus = (payload: {
             type: "DB_INVENTORY_UPDATE_ERROR",
             error: "We couldn't update the inventory",
           });
-        inventoryRows.push(row);
       }
 
-      return { inventoryRows, orderRow };
+      return { ok: true, message: "updated" };
     }),
-    (e) => databaseErrorMapper(e, TEST),
-  ).andThen((result) => {
-    const { orderRow, inventoryRows } = result as {
-      orderRow: typeof schema.orders.$inferSelect;
-      inventoryRows: (typeof schema.inventory.$inferSelect)[];
-    };
-    if (inventoryRows?.length === 0 && inventoryRows)
-      return err({
-        type: "DB_INVENTORY_UPDATE_ERROR" as const,
-        error: "We couldn't update the inventory",
-      });
-
-    if (!orderRow)
-      return err({
-        type: "DB_ORDER_UPDATE_ERROR" as const,
-        error: "We couldn't find any order",
-      });
-    return ok({ ok: true, message: "updated" });
-  });
+    (e) => mapDatabaseError(e),
+  );

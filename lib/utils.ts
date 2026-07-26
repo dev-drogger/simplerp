@@ -97,7 +97,6 @@ export function mapDatabaseError<
   if (e instanceof DatabaseError) return e.payload as T;
 
   const cause = parseDatabaseCause(e);
-  console.log("parsed db error:", cause);
   const key = cause ? `${cause.table}.${cause.action}` : undefined;
   const mapped =
     key && key in ERROR_REGISTRY

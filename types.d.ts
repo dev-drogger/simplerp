@@ -56,3 +56,8 @@ export type OrderStatus = InferEnum<typeof orderStatusEnum>;
 
 export type DatabaseActionReturnType = { ok: boolean; message: string };
 export type InventoryActions = "restock" | "adjustmen" | "add" | "production";
+
+export type StockAdjustment = {
+  itemId: number;
+  amount: number;
+}[];

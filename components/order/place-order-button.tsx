@@ -44,7 +44,7 @@ const PlaceOrderButton = () => {
 
   const { fields, append, remove } = useFieldArray({
     control: inputOrderForm.control,
-    name: "items",
+    name: "products",
   });
 
   return (
@@ -69,6 +69,7 @@ const PlaceOrderButton = () => {
                 <Field data-invalid={fieldState.invalid}>
                   <Label htmlFor="order.invoice">Invoice</Label>
                   <Input
+                    required
                     id="invoice"
                     {...field}
                     aria-invalid={fieldState.invalid}
@@ -88,6 +89,7 @@ const PlaceOrderButton = () => {
                 <Field data-invalid={fieldState.invalid}>
                   <Label htmlFor="customerName">Customer</Label>
                   <Input
+                    required
                     id="customerName"
                     {...field}
                     aria-invalid={fieldState.invalid}
@@ -105,10 +107,10 @@ const PlaceOrderButton = () => {
               <div key={field.id} className="flex items-end gap-2">
                 <Controller
                   control={inputOrderForm.control}
-                  name={`items.${index}.sku`}
+                  name={`products.${index}.sku`}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
-                      <Label htmlFor="items.sku">Product</Label>
+                      <Label htmlFor="products.sku">Product</Label>
 
                       <Select
                         value={field.value}
@@ -141,7 +143,7 @@ const PlaceOrderButton = () => {
 
                 <Controller
                   control={inputOrderForm.control}
-                  name={`items.${index}.quantity`}
+                  name={`products.${index}.quantity`}
                   render={({ field, fieldState }) => (
                     <Field data-invalid={fieldState.invalid}>
                       <Label htmlFor="items.quantity">Quantity</Label>
@@ -151,7 +153,12 @@ const PlaceOrderButton = () => {
                         min={1}
                         className="w-24"
                         {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
+                        required
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? "" : Number(val));
+                        }}
                         aria-invalid={fieldState.invalid}
                       />
                       {fieldState.invalid && (

@@ -54,3 +54,10 @@ export type QuantityExceedError = {
 
 export type DeletePlacedOrderError = DeleteOrderError | UpdateInventoryError;
 export type AppError<T> = AccessError | T;
+export type StockError =
+  | GetInventoryError
+  | QuantityExceedError
+  | UpdateInventoryError
+  | OnHandError;
+
+export type OnHandError = DbError<"INSUFFICIENT_ON_HAND_QUANTITY">;
