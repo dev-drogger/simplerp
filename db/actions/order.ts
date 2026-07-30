@@ -7,7 +7,7 @@ import {
   OrderSummary,
   OrderStatus,
   DatabaseActionReturnType,
-  ReserveQuantity,
+  StockAmount,
 } from "@/types";
 import {
   UpdateOrderError,
@@ -15,6 +15,7 @@ import {
   GetOrderError,
 } from "@/types.error";
 import { DatabaseError, mapDatabaseError } from "@/lib/utils";
+import { adjustReservedStock } from "./stock-adjustment";
 
 export const fetchOrderSummary = (): ResultAsync<
   OrderSummary[],
@@ -84,7 +85,7 @@ export const fetchOrderSummary = (): ResultAsync<
 export const updateOrderStatus = (payload: {
   orderId: string;
   status: string;
-  materials: ReserveQuantity;
+  materials: StockAmount;
 }): ResultAsync<
   DatabaseActionReturnType,
   UpdateOrderError | UpdateInventoryError
@@ -103,40 +104,7 @@ export const updateOrderStatus = (payload: {
           error: "We couldn't update the order status",
         });
 
-      for (const item of payload.materials) {
-        let updateValues;
-
-        switch (payload.status) {
-          case "completed":
-            updateValues = {
-              quantityReserved: sql`${schema.inventory.quantityReserved} - ${item.amount}`,
-              quantityOnHand: sql`${schema.inventory.quantityOnHand} - ${item.amount}`,
-            };
-            break;
-
-          case "returned":
-          case "cancelled":
-            updateValues = {
-              quantityReserved: sql`${schema.inventory.quantityReserved} - ${item.amount}`,
-            };
-            break;
-
-          default:
-            throw new Error(`Unsupported status: ${payload.status}`);
-        }
-
-        const [row] = await tx
-          .update(schema.inventory)
-          .set(updateValues)
-          .where(eq(schema.inventory.itemId, item.itemId))
-          .returning();
-
-        if (!row)
-          throw new DatabaseError<UpdateInventoryError>({
-            type: "DB_INVENTORY_UPDATE_ERROR",
-            error: "We couldn't update the inventory",
-          });
-      }
+      await adjustReservedStock(tx, payload.materials);
 
       return { ok: true, message: "updated" };
     }),

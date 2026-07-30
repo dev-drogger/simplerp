@@ -6,7 +6,7 @@ import {
   CreateInventoryError,
   UpdateInventoryError,
 } from "@/types.error";
-import { Inventory, InventorySummary, ReserveQuantity } from "@/types";
+import { Inventory, InventorySummary, StockAmount } from "@/types";
 import { eq, sql } from "drizzle-orm";
 import { DatabaseError, mapDatabaseError } from "@/lib/utils";
 
@@ -77,7 +77,7 @@ export const insertInventory = (
   });
 
 export const restockInventory = (payload: {
-  items: ReserveQuantity;
+  items: StockAmount;
 }): ResultAsync<{ ok: boolean; message: string }, UpdateInventoryError> => {
   return ResultAsync.fromPromise(
     db.transaction(async (tx) => {

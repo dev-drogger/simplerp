@@ -3,10 +3,12 @@ import {
   OrderSummary,
   PlaceOrder,
   DatabaseActionReturnType,
-  ReserveQuantity,
+  StockAmount,
   OrderStatus,
   InventorySummary,
   InventoryTransaction,
+  ShipmentSummary,
+  ShipmentInformation,
 } from "@/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -15,7 +17,7 @@ export const databaseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "/api",
   }),
-  tagTypes: ["Products", "OrderSummary", "Inventory"],
+  tagTypes: ["Products", "OrderSummary", "Inventory", "ShipmentSummary"],
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], void>({
       query: () => `/v1/products`,
@@ -32,6 +34,11 @@ export const databaseApi = createApi({
       providesTags: ["Inventory"],
       keepUnusedDataFor: 60 * 60,
     }),
+    getShipmentSummary: builder.query<ShipmentSummary[], void>({
+      query: () => "v1/shipments",
+      providesTags: ["ShipmentSummary"],
+      keepUnusedDataFor: 60 * 60,
+    }),
     createOrder: builder.mutation<DatabaseActionReturnType, PlaceOrder>({
       query: (placeOrderForm) => ({
         url: "/v1/order",
@@ -42,7 +49,7 @@ export const databaseApi = createApi({
     }),
     deleteOrder: builder.mutation<
       DatabaseActionReturnType,
-      { orderId: string; materials: ReserveQuantity }
+      { orderId: string; materials: StockAmount }
     >({
       query: (payload) => ({
         url: "/v1/order",
@@ -53,7 +60,7 @@ export const databaseApi = createApi({
     }),
     restockInventory: builder.mutation<
       DatabaseActionReturnType,
-      { items: ReserveQuantity }
+      { items: StockAmount }
     >({
       query: (payload) => ({
         url: "v1/inventory",
@@ -63,7 +70,7 @@ export const databaseApi = createApi({
     }),
     updateOrderStatus: builder.mutation<
       DatabaseActionReturnType,
-      { orderId: string; status: OrderStatus; materials: ReserveQuantity }
+      { orderId: string; status: OrderStatus; materials: StockAmount }
     >({
       query: (payload) => ({
         url: "v1/order",
@@ -71,6 +78,17 @@ export const databaseApi = createApi({
         body: payload,
       }),
       invalidatesTags: ["OrderSummary"],
+    }),
+    updateShipment: builder.mutation<
+      DatabaseActionReturnType,
+      ShipmentInformation
+    >({
+      query: (payload) => ({
+        url: "v1/shipments",
+        method: "PUT",
+        body: payload,
+      }),
+      invalidatesTags: ["ShipmentSummary"],
     }),
     createInventoryTransaction: builder.mutation<
       DatabaseActionReturnType,
@@ -88,11 +106,14 @@ export const databaseApi = createApi({
 
 export const {
   useGetProductsQuery,
+  useLazyGetProductsQuery,
   useGetOrdersQuery,
+  useGetShipmentSummaryQuery,
   useGetInventoryQuery,
   useCreateOrderMutation,
   useRestockInventoryMutation,
   useDeleteOrderMutation,
   useUpdateOrderStatusMutation,
+  useUpdateShipmentMutation,
   useCreateInventoryTransactionMutation,
 } = databaseApi;

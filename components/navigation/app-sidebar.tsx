@@ -79,8 +79,8 @@ const data = {
       ],
     },
     {
-      title: "Shipping",
-      url: "#",
+      title: "Shipments",
+      url: "/shipments",
       icon: BookOpen,
       items: [
         {

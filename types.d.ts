@@ -1,6 +1,6 @@
 import * as validation from "@/lib/validation";
 import { z } from "zod";
-import { itemTypeEnum, stockStatusEnum, orderStatusEnum } from "./db/schema";
+import { orderStatusEnum, shipmentStatusEnum } from "./db/schema";
 import { InferEnum } from "drizzle-orm";
 
 type OrderSummary = {
@@ -28,7 +28,7 @@ type InventorySummary = {
 
 type SaleStatus =
   | "completed"
-  | "shipped"
+  | "on_process"
   | "cancelled"
   | "returned"
   | "pending";
@@ -45,20 +45,36 @@ export type Customer = z.infer<typeof validation.selectCustomerSchema>;
 export type Product = z.infer<typeof validation.selectProductsSchema>;
 export type InputOrder = z.infer<typeof validation.inputOrderSchema>;
 export type PlaceOrder = z.infer<typeof validation.placeOrderSchema>;
-export type ItemType = z.infer<typeof itemTypeEnum>;
-export type StockStatus = z.infer<typeof stockStatusEnum>;
-
-export type ReserveQuantity = {
-  itemId: number;
-  amount: number;
-}[];
 
 export type OrderStatus = InferEnum<typeof orderStatusEnum>;
 
 export type DatabaseActionReturnType = { ok: boolean; message: string };
-export type InventoryActions = "restock" | "adjustmen" | "add" | "production";
+export type InventoryActions = "restock" | "adjustment" | "add" | "production";
 
-export type StockAdjustment = {
+export type StockAmount = {
   itemId: number;
   amount: number;
 }[];
+
+export type ShipmentSummary = {
+  date: Date;
+  orderId: string;
+  invoice: string;
+  orderDetails: {
+    productName: string;
+    sku: string;
+    quantity: number;
+  }[];
+  shipmentId: string;
+  shipmentStatus: shipmentStatus;
+  shipmentDetails: string;
+};
+
+export type shipmentStatus = InferEnum<typeof shipmentStatusEnum>;
+
+export type ShipmentInformation = {
+  orderId: string;
+  shipmentId: string;
+  shipmentDetails: string;
+  shipmentStatus: shipmentStatus;
+};

@@ -27,7 +27,7 @@ import { productsSchema } from "@/lib/validation";
 import { Field, FieldError, FieldGroup } from "../ui/field";
 import { Check, Loader2, Plus, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { calculateStock } from "@/lib/utils";
+import { calculateMaterialUsage } from "@/lib/utils";
 import { handleErrorToast } from "@/components/handle-error-toast";
 import { AppError, CreateInventoryTransactionError } from "@/types.error";
 
@@ -56,14 +56,14 @@ const Production = ({
     },
   });
 
-  const formItems = productionForm.watch("products");
+  const formItems = productionForm.getValues("products");
   const { fields, append, remove } = useFieldArray({
     control: productionForm.control,
     name: "products",
   });
 
   const handleRestockSubmit = productionForm.handleSubmit(async (values) => {
-    const materials = calculateStock(values.products, true, true);
+    const materials = calculateMaterialUsage(values.products);
     const inventoryTransactionPayload = materials.map((mats) => {
       return {
         itemId: mats.itemId,

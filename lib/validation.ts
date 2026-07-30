@@ -135,3 +135,23 @@ export const inventoryTransactionSchema = createSelectSchema(
     createdAt: z.date().optional,
   },
 );
+
+export const testSchema = z.object({
+  items: z.array(inventoryTransactionSchema),
+});
+
+export const updateShipmentSchema = z.object({
+  orderId: z.string(),
+  shipmentId: z.string(),
+  shipmentDetails: z.string(),
+  shipmentStatus: z.enum([
+    "pending",
+    "packed",
+    "delivered",
+    "lost",
+    "returned",
+    "cancelled",
+    "on_delivery",
+    "failed_delivery",
+  ]),
+});

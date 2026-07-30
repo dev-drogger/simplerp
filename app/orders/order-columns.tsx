@@ -4,10 +4,13 @@ import { OrderSummary } from "@/types";
 import { ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "@/components/ui/data-table-column-header";
 import OrderActions from "@/components/order/order-actions";
+import { dateFilterFn } from "@/lib/utils";
 
 export const OrderColumns: ColumnDef<OrderSummary>[] = [
   {
     accessorKey: "date",
+    filterFn: dateFilterFn,
+    size: 50,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Date" />
     ),
@@ -18,18 +21,21 @@ export const OrderColumns: ColumnDef<OrderSummary>[] = [
   },
   {
     accessorKey: "invoice",
+    size: 50,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Invoice" />
     ),
   },
   {
     accessorKey: "customerName",
+    size: 70,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Customer Name" />
     ),
   },
   {
     accessorKey: "items",
+    size: 100,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Items" />
     ),
@@ -49,6 +55,7 @@ export const OrderColumns: ColumnDef<OrderSummary>[] = [
   },
   {
     accessorKey: "status",
+    size: 50,
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Status" />
     ),
@@ -60,11 +67,12 @@ export const OrderColumns: ColumnDef<OrderSummary>[] = [
   },
   {
     accessorKey: "amount",
+    size: 50,
     header: ({ column }) => (
       <DataTableColumnHeader
         column={column}
         title="Amount"
-        className="justify-end"
+        // className="justify-end"
       />
     ),
     cell: ({ row }) => {
@@ -76,11 +84,12 @@ export const OrderColumns: ColumnDef<OrderSummary>[] = [
         maximumFractionDigits: 0,
       }).format(amount);
 
-      return <div className="text-right font-medium mr-4">{formatted}</div>;
+      return <div className="font-medium">{formatted}</div>;
     },
   },
   {
     id: "actions",
+    size: 20,
     cell: ({ row }) => <OrderActions order={row.original} />,
   },
 ];

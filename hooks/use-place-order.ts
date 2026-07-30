@@ -12,7 +12,7 @@ import type { InputOrder } from "@/types";
 import { useEffect } from "react";
 import { handleErrorToast } from "@/components/handle-error-toast";
 import { AppError, PlaceOrderError } from "@/types.error";
-import { calculateStock } from "@/lib/utils";
+import { reserveQuantity } from "@/lib/utils";
 
 export const usePlaceOrder = () => {
   const inputOrderForm = useForm<InputOrder>({
@@ -71,7 +71,7 @@ export const usePlaceOrder = () => {
       },
     };
 
-    const test = calculateStock(values.products, false, false);
+    const test = reserveQuantity(values.products);
 
     const finalOrder = {
       ...order,

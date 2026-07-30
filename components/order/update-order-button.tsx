@@ -12,24 +12,68 @@ import {
 } from "../ui/dialog";
 import { DropdownMenuItem } from "../ui/dropdown-menu";
 import { OrderStatus, OrderSummary } from "@/types";
-import { useUpdateOrderStatusMutation } from "@/services/database";
+import {
+  useCreateInventoryTransactionMutation,
+  useUpdateOrderStatusMutation,
+} from "@/services/database";
 import { useState } from "react";
 import { ORDER_STATUS } from "@/lib";
 import { toast } from "sonner";
-import { calculateStock } from "@/lib/utils";
+import { releaseQuantity } from "@/lib/utils";
+import {
+  CreateInventoryTransactionError,
+  AppError,
+  UpdateOrderError,
+} from "@/types.error";
+import { handleErrorToast } from "../handle-error-toast";
+import { useEffect } from "react";
 
 const UpdateOrderButton = ({ order }: { order: OrderSummary }) => {
   const [open, setOpen] = useState(false);
-  const [updateOrder] = useUpdateOrderStatusMutation();
+  const [updateOrder, { error: updateOrderError }] =
+    useUpdateOrderStatusMutation();
+  const [insertInventoryTransaction, { error: inventoryTransactionError }] =
+    useCreateInventoryTransactionMutation();
+
+  useEffect(() => {
+    if (!updateOrderError) return;
+    handleErrorToast<AppError<UpdateOrderError>>(updateOrderError);
+    return;
+  }, [updateOrderError]);
+
+  useEffect(() => {
+    if (!inventoryTransactionError) return;
+    handleErrorToast<AppError<CreateInventoryTransactionError>>(
+      inventoryTransactionError,
+    );
+    return;
+  }, [inventoryTransactionError]);
 
   const handleUpdateOrder = async (status: string) => {
-    const materials = calculateStock(order.items, true, false);
+    const materials = releaseQuantity(order.items);
     const payload = {
       orderId: order.orderId,
       status: status as OrderStatus,
       materials,
     };
-    await updateOrder(payload);
+    const inventoryTransactionPayload = materials.map((mats) => {
+      return {
+        itemId: mats.itemId,
+        changeQuantity: mats.amount,
+        reason: "sale" as const,
+      };
+    });
+
+    switch (status) {
+      case "completed":
+        await updateOrder(payload);
+        await insertInventoryTransaction(inventoryTransactionPayload);
+        break;
+      default:
+        await updateOrder(payload);
+        break;
+    }
+
     setOpen(!open);
     toast.success("Order status updated");
   };
@@ -46,7 +90,7 @@ const UpdateOrderButton = ({ order }: { order: OrderSummary }) => {
           <DialogTitle>Order Status</DialogTitle>
           <DialogDescription>Please select current status</DialogDescription>
         </DialogHeader>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="flex items-center justify-between">
           {ORDER_STATUS.map((status, index) => (
             <Button
               onClick={() => {

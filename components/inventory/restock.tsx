@@ -1,3 +1,5 @@
+import { handleErrorToast } from "@/components/handle-error-toast";
+import { AppError, UpdateInventoryError } from "@/types.error";
 import {
   DialogDescription,
   DialogFooter,
@@ -20,12 +22,12 @@ import {
 import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { InventoryActions } from "@/types";
-import type { Dispatch } from "react";
+import { type Dispatch, useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { itemsQuantitySchema } from "@/lib/validation";
 import { Field, FieldError, FieldGroup } from "../ui/field";
-import { Check, Trash2Icon } from "lucide-react";
+import { Check, Loader2, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
 const Restock = ({
@@ -37,7 +39,13 @@ const Restock = ({
 }) => {
   const { data } = useGetInventoryQuery();
 
-  const [restock] = useRestockInventoryMutation();
+  const [restock, { isLoading, error }] = useRestockInventoryMutation();
+
+  useEffect(() => {
+    if (!error) return;
+    handleErrorToast<AppError<UpdateInventoryError>>(error);
+    return;
+  }, [error]);
 
   const restockForm = useForm({
     resolver: zodResolver(itemsQuantitySchema),
@@ -46,7 +54,7 @@ const Restock = ({
     },
   });
 
-  const formItems = restockForm.watch("items");
+  const formItems = restockForm.getValues("items");
   const { fields, append, remove } = useFieldArray({
     control: restockForm.control,
     name: "items",
@@ -181,13 +189,22 @@ const Restock = ({
         </FieldGroup>
 
         <DialogFooter>
-          <Button onClick={() => setSelected(null)}>Back</Button>
+          <Button onClick={() => setSelected(null)} disabled={isLoading}>
+            Back
+          </Button>
           <Button
+            disabled={isLoading}
             type="submit"
             className="bg-green-500 text-white w-20 hover:bg-green-700"
           >
-            <Check />
-            Save
+            {isLoading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <>
+                <Check />
+                Save
+              </>
+            )}
           </Button>
         </DialogFooter>
       </form>

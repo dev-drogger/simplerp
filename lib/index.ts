@@ -71,7 +71,6 @@ export const INVENTORY_ITEMS = {
 
 export const ORDER_STATUS = [
   { value: "completed", styleColor: "green" },
-  { value: "shipped", styleColor: "blue" },
   { value: "cancelled", styleColor: "red" },
   { value: "returned", styleColor: "yellow" },
 ];

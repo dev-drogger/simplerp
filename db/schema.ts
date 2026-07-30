@@ -7,10 +7,11 @@ import {
   snakeCase,
   uuid,
   numeric,
-  jsonb,
+  text,
 } from "drizzle-orm/pg-core";
 
 export const orderStatusEnum = pgEnum("order_status", [
+  "on_process",
   "completed",
   "cancelled",
   "returned",
@@ -30,9 +31,8 @@ export const stockStatusEnum = pgEnum("stock_status", [
   "low_on_stock",
 ]);
 
-export const shippingStatusEnum = pgEnum("shipping_status", [
+export const shipmentStatusEnum = pgEnum("shipment_status", [
   "pending",
-  "processing",
   "packed",
   "delivered",
   "lost",
@@ -97,15 +97,6 @@ export const inventoryTransactions = snakeCase.table("inventory_transactions", {
   createdAt: timestamp().defaultNow(),
 });
 
-export const billOfMaterials = snakeCase.table("bill_of_materials", {
-  bomId: uuid().primaryKey().defaultRandom(),
-  orderId: uuid()
-    .notNull()
-    .references(() => orders.orderId, { onDelete: "cascade" }),
-  materials: jsonb().notNull(),
-  createdAt: timestamp().defaultNow(),
-});
-
 export const orders = snakeCase.table("orders", {
   orderId: uuid().primaryKey().defaultRandom(),
   invoice: varchar().notNull().unique(),
@@ -135,11 +126,11 @@ export const customers = snakeCase.table("customers", {
   customerName: varchar({ length: 150 }).notNull(),
 });
 
-export const shippings = snakeCase.table("shippings", {
-  shippingId: uuid().primaryKey().defaultRandom(),
-  deliveryId: varchar(),
+export const shipments = snakeCase.table("shipments", {
   orderId: uuid()
-    .notNull()
+    .primaryKey()
     .references(() => orders.orderId, { onDelete: "cascade" }),
-  status: shippingStatusEnum("status").notNull(),
+  shipmentId: varchar().notNull().default("No Data"),
+  shipmentStatus: shipmentStatusEnum("shipment_status").notNull(),
+  shipmentDetails: text().notNull().default("No Details"),
 });

@@ -1,6 +1,6 @@
 import { DatabaseError, mapDatabaseError } from "@/lib/utils";
 import { eq, sql } from "drizzle-orm";
-import { DatabaseActionReturnType, ReserveQuantity } from "@/types";
+import { DatabaseActionReturnType, StockAmount } from "@/types";
 import {
   UpdateInventoryError,
   GetProductsError,
@@ -15,7 +15,7 @@ export const insertProducedQuantity = ({
   materials,
   products,
 }: {
-  materials: ReserveQuantity;
+  materials: StockAmount;
   products: {
     sku: string;
     quantity: number;
@@ -53,8 +53,5 @@ export const insertProducedQuantity = ({
       await adjustOnHandStock(tx, materials);
       return { ok: true, message: "updated" };
     }),
-    (e) => {
-      console.log(e);
-      return mapDatabaseError(e);
-    },
+    (e) => mapDatabaseError(e),
   );

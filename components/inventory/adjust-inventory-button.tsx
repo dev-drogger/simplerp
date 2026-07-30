@@ -15,6 +15,7 @@ import { useState } from "react";
 import Restock from "./restock";
 import { InventoryActions } from "@/types";
 import Production from "./production";
+import Adjustment from "./adjustment";
 
 const AdjustInventoryButton = () => {
   const [selected, setSelected] = useState<InventoryActions | null>(null);
@@ -25,6 +26,8 @@ const AdjustInventoryButton = () => {
         return <Restock setSelected={setSelected} setOpen={setOpen} />;
       case "production":
         return <Production setSelected={setSelected} setOpen={setOpen} />;
+      case "adjustment":
+        return <Adjustment setSelected={setSelected} setOpen={setOpen} />;
       default:
         return null;
     }
@@ -53,7 +56,9 @@ const AdjustInventoryButton = () => {
             <Button onClick={() => setSelected("production")}>
               Production
             </Button>
-            <Button>Adjustment</Button>
+            <Button onClick={() => setSelected("adjustment")}>
+              Adjustment
+            </Button>
           </>
         ) : (
           renderInventoryActions()

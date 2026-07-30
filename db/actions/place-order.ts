@@ -1,7 +1,7 @@
 import { db } from "@/db/drizzle";
 import * as schema from "@/db/schema";
 import { ResultAsync } from "neverthrow";
-import { DatabaseActionReturnType, PlaceOrder, ReserveQuantity } from "@/types";
+import { DatabaseActionReturnType, PlaceOrder, StockAmount } from "@/types";
 import { DeletePlacedOrderError, PlaceOrderError } from "@/types.error";
 import { eq, sql } from "drizzle-orm";
 import { DatabaseError, mapDatabaseError } from "@/lib/utils";
@@ -57,7 +57,7 @@ export const deletePlacedOrder = ({
   materials,
 }: {
   orderId: string;
-  materials: ReserveQuantity;
+  materials: StockAmount;
 }): ResultAsync<DatabaseActionReturnType, DeletePlacedOrderError> =>
   ResultAsync.fromPromise(
     db.transaction(async (tx) => {

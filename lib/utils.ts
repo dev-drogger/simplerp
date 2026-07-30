@@ -1,3 +1,5 @@
+import { type Row } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import {
@@ -22,20 +24,6 @@ export class DatabaseError<T> extends Error {
     );
   }
 }
-
-const parseDatabaseError = (e: unknown): string | undefined => {
-  if (
-    typeof e === "object" &&
-    e !== null &&
-    "cause" in e &&
-    typeof e.cause === "object" &&
-    e.cause !== null &&
-    "table" in e.cause
-  ) {
-    return String((e.cause as { table: unknown }).table);
-  }
-  return undefined;
-};
 
 const parseDatabaseAction = (query: string): DbAction | undefined => {
   const firstWord = query.trim().split(/\s+/)[0]?.toUpperCase();
@@ -80,23 +68,6 @@ const parseDatabaseCause = (
   return { table, action };
 };
 
-export function databaseErrorMapper<T extends { type: string; error: string }>(
-  e: unknown,
-  tableMap: Record<string, T>,
-): T {
-  if (e instanceof DatabaseError) return e.payload as T;
-
-  const table = parseDatabaseError(e);
-  const mapped = table ? tableMap[table] : undefined;
-  return (
-    mapped ??
-    ({
-      type: "DATABASE_ERROR",
-      error: "Unexpected error",
-    } as T)
-  );
-}
-
 export function mapDatabaseError<
   T extends { type: string; error: string } = { type: string; error: string },
 >(e: unknown): T {
@@ -115,17 +86,15 @@ export function mapDatabaseError<
   );
 }
 
-export const calculateStock = <
-  T extends { sku: keyof typeof RECIPE; quantity: number },
->(
+const calculateStock = <T extends { sku: string; quantity: number }>(
   items: T[],
   release: boolean,
   production: boolean,
 ) => {
   const totals = items.reduce<Record<string, number>>((acc, item) => {
     const recipe = production
-      ? PRODUCTION_MATERIALS[item.sku]
-      : RECIPE[item.sku];
+      ? PRODUCTION_MATERIALS[item.sku as keyof typeof RECIPE]
+      : RECIPE[item.sku as keyof typeof RECIPE];
     Object.entries(recipe).forEach(([material, amountPerUnit]) => {
       acc[material] = (acc[material] ?? 0) + amountPerUnit * item.quantity;
     });
@@ -136,4 +105,33 @@ export const calculateStock = <
     itemId: Number(INVENTORY_ITEMS[material as keyof typeof INVENTORY_ITEMS]),
     amount: release ? -amount : amount,
   }));
+};
+
+export const reserveQuantity = <T extends { sku: string; quantity: number }>(
+  inventoryItems: T[],
+) => calculateStock(inventoryItems, false, false);
+
+export const releaseQuantity = <T extends { sku: string; quantity: number }>(
+  inventoryItems: T[],
+) => calculateStock(inventoryItems, true, false);
+
+export const calculateMaterialUsage = <
+  T extends { sku: string; quantity: number },
+>(
+  inventoryItems: T[],
+) => calculateStock(inventoryItems, true, true);
+
+export const dateFilterFn = <TData>(
+  row: Row<TData>,
+  columnId: string,
+  filterValue: Date,
+): boolean => {
+  if (!filterValue) return true;
+  const cellValue = row.getValue(columnId) as string; // "2026-07-28 11:44:42.424165"
+  if (!cellValue) return false;
+
+  const cellDateStr = cellValue.slice(0, 10); // "2026-07-28"
+  const filterDateStr = format(filterValue, "yyyy-MM-dd");
+
+  return cellDateStr === filterDateStr;
 };

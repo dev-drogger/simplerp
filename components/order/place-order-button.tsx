@@ -60,7 +60,7 @@ const PlaceOrderButton = () => {
           <DialogTitle>Add new order</DialogTitle>
           <DialogDescription>Please fill in the details.</DialogDescription>
         </DialogHeader>
-        <form onSubmit={onSubmitOrder}>
+        <form onSubmit={onSubmitOrder} className="space-y-2">
           <FieldGroup>
             <Controller
               name="invoice"

@@ -1,5 +1,5 @@
 import { DatabaseError } from "@/lib/utils";
-import { StockAdjustment } from "@/types";
+import { StockAmount } from "@/types";
 import { inventory } from "../schema";
 import { type EmptyRelations, eq } from "drizzle-orm";
 import {
@@ -13,7 +13,7 @@ import type { NeonQueryResultHKT } from "drizzle-orm/neon-serverless";
 
 export const adjustReservedStock = async (
   tx: PgAsyncTransaction<NeonQueryResultHKT, EmptyRelations>,
-  value: StockAdjustment,
+  value: StockAmount,
 ) => {
   for (const item of value) {
     const [lockedRow] = await tx
@@ -60,7 +60,7 @@ export const adjustReservedStock = async (
 
 export const adjustOnHandStock = async (
   tx: PgAsyncTransaction<NeonQueryResultHKT, EmptyRelations>,
-  value: StockAdjustment,
+  value: StockAmount,
 ) => {
   for (const item of value) {
     const [lockedRow] = await tx

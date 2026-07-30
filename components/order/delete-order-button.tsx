@@ -13,7 +13,7 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { calculateStock } from "@/lib/utils";
+import { releaseQuantity } from "@/lib/utils";
 import { handleErrorToast } from "@/components/handle-error-toast";
 import { AppError, CreateInventoryTransactionError } from "@/types.error";
 import { useEffect, useState } from "react";
@@ -29,7 +29,7 @@ const DeleteOrderButton = ({ order }: { order: OrderSummary }) => {
     return;
   }, [error]);
 
-  const materials = calculateStock(order.items, true, false);
+  const materials = releaseQuantity(order.items);
 
   const final = {
     orderId: order.orderId,
