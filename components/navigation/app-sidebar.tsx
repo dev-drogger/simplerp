@@ -40,81 +40,16 @@ const data = {
       url: "/inventory",
       icon: Box,
       isActive: true,
-      items: [
-        {
-          title: "Overview",
-          url: "#",
-        },
-        {
-          title: "Raw Material",
-          url: "#",
-        },
-        {
-          title: "Packaging",
-          url: "#",
-        },
-        {
-          title: "Products",
-          url: "#",
-        },
-      ],
     },
     {
       title: "Orders",
       url: "/orders",
       icon: Bot,
-      items: [
-        {
-          title: "Overview",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
     },
     {
       title: "Shipments",
       url: "/shipments",
       icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Transactions",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "Cash in",
-          url: "#",
-        },
-        {
-          title: "Cash Out",
-          url: "#",
-        },
-      ],
     },
   ],
   navSecondary: [
