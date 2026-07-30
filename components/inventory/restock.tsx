@@ -25,7 +25,7 @@ import { InventoryActions } from "@/types";
 import { type Dispatch, useEffect } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { itemsQuantitySchema } from "@/lib/validation";
+import { stockAmountSchema } from "@/lib/validation";
 import { Field, FieldError, FieldGroup } from "../ui/field";
 import { Check, Loader2, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
@@ -48,16 +48,16 @@ const Restock = ({
   }, [error]);
 
   const restockForm = useForm({
-    resolver: zodResolver(itemsQuantitySchema),
+    resolver: zodResolver(stockAmountSchema),
     defaultValues: {
-      items: [{ itemId: 0, amount: 0 }],
+      stockAmount: [{ itemId: 0, amount: 0 }],
     },
   });
 
-  const formItems = restockForm.getValues("items");
+  const formItems = restockForm.getValues("stockAmount");
   const { fields, append, remove } = useFieldArray({
     control: restockForm.control,
-    name: "items",
+    name: "stockAmount",
   });
 
   const handleRestockSubmit = restockForm.handleSubmit(async (values) => {
@@ -82,10 +82,10 @@ const Restock = ({
             <div key={field.id} className="flex items-end gap-2">
               <Controller
                 control={restockForm.control}
-                name={`items.${index}.itemId`}
+                name={`stockAmount.${index}.itemId`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <Label htmlFor="">Item</Label>
+                    <Label htmlFor="stockAmount.itemId">Item</Label>
 
                     <Select
                       value={String(field.value)}
@@ -130,10 +130,10 @@ const Restock = ({
 
               <Controller
                 control={restockForm.control}
-                name={`items.${index}.amount`}
+                name={`stockAmount.${index}.amount`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <Label htmlFor="items.amount">Quantity</Label>
+                    <Label htmlFor="stockAmount.amount">Quantity</Label>
 
                     <Input
                       required

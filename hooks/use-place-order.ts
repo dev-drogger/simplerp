@@ -71,11 +71,11 @@ export const usePlaceOrder = () => {
       },
     };
 
-    const test = reserveQuantity(values.products);
+    const stockAmount = reserveQuantity(values.products);
 
     const finalOrder = {
       ...order,
-      reserveQuantity: test,
+      stockAmount,
     };
 
     return finalOrder;

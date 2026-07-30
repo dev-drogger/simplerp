@@ -2,7 +2,6 @@
 
 import { SidebarIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-// import { SearchForm } from "@/components/search-form";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -25,7 +24,7 @@ function formatSegment(segment: string) {
 export function SiteHeader() {
   const { toggleSidebar } = useSidebar();
   const pathname = usePathname();
-  const segments = pathname.split("/").filter(Boolean); // ["order", "add"]
+  const segments = pathname.split("/").filter(Boolean);
 
   const crumbs = segments.map((segment, index) => {
     const href = "/" + segments.slice(0, index + 1).join("/");
@@ -75,7 +74,6 @@ export function SiteHeader() {
             ))}
           </BreadcrumbList>
         </Breadcrumb>
-        {/* <SearchForm className="w-full sm:ml-auto sm:w-auto" /> */}
       </div>
     </header>
   );

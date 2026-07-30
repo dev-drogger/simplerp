@@ -52,7 +52,6 @@ const AdjustInventoryButton = () => {
             </DialogHeader>
 
             <Button onClick={() => setSelected("restock")}>Restock</Button>
-            <Button>Add new item</Button>
             <Button onClick={() => setSelected("production")}>
               Production
             </Button>

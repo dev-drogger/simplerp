@@ -37,7 +37,7 @@ export const POST = async (req: NextRequest) => {
     return NextResponse.json(
       {
         type: "VALIDATION_ERROR",
-        error: parsed.error,
+        error: "You accidentally entered the wrong data",
       },
       { status: 400 },
     );

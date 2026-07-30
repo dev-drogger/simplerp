@@ -11,7 +11,7 @@ export const insertPlaceOrder = ({
   order,
   customer,
   orderItems,
-  reserveQuantity,
+  stockAmount,
 }: PlaceOrder): ResultAsync<DatabaseActionReturnType, PlaceOrderError> =>
   ResultAsync.fromPromise(
     db.transaction(async (tx) => {
@@ -45,7 +45,7 @@ export const insertPlaceOrder = ({
           error: "We couldn't add the order items",
         });
 
-      await adjustReservedStock(tx, reserveQuantity);
+      await adjustReservedStock(tx, stockAmount);
 
       return { ok: true, message: "created" } as const;
     }),

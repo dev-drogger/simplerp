@@ -23,7 +23,7 @@ import { InventoryActions } from "@/types";
 import { useEffect, type Dispatch } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { testSchema } from "@/lib/validation";
+import { inventoryTransactionSchema } from "@/lib/validation";
 import { Field, FieldError, FieldGroup } from "../ui/field";
 import { Check, Loader2, Plus, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
@@ -59,29 +59,29 @@ const Adjustment = ({
   }, [error]);
 
   const inventoryAdjustmentForm = useForm({
-    resolver: zodResolver(testSchema),
+    resolver: zodResolver(inventoryTransactionSchema),
     defaultValues: {
-      items: [{ itemId: 0, changeQuantity: 0, reason: "purchase" }],
+      inventoryTransactions: [
+        { itemId: 0, changeQuantity: 0, reason: "purchase", referenceId: "" },
+      ],
     },
   });
 
   const { fields, append, remove } = useFieldArray({
     control: inventoryAdjustmentForm.control,
-    name: "items",
+    name: "inventoryTransactions",
   });
 
-  const handleRestockSubmit = inventoryAdjustmentForm.handleSubmit(
-    async (values) => {
+  const handleInventoryTransactionsSubmit =
+    inventoryAdjustmentForm.handleSubmit(async (values) => {
       try {
-        const { items } = values;
-        await insertInventoryTransaction(items).unwrap();
+        await insertInventoryTransaction(values).unwrap();
         setOpen(false);
         toast.success("Successfully adjusted the stock!");
         inventoryAdjustmentForm.reset();
         setSelected(null);
       } catch {}
-    },
-  );
+    });
 
   return (
     <>
@@ -90,7 +90,7 @@ const Adjustment = ({
         <DialogDescription>Please fill in the details</DialogDescription>
       </DialogHeader>
 
-      <form onSubmit={handleRestockSubmit}>
+      <form onSubmit={handleInventoryTransactionsSubmit}>
         <FieldGroup>
           {fields.map((field, index) => (
             <div key={field.id} className="flex items-center gap-2">
@@ -99,10 +99,12 @@ const Adjustment = ({
                 <div className="grid grid-cols-2 gap-2">
                   <Controller
                     control={inventoryAdjustmentForm.control}
-                    name={`items.${index}.itemId`}
+                    name={`inventoryTransactions.${index}.itemId`}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <Label htmlFor="items.itemId">Product</Label>
+                        <Label htmlFor="inventoryTransactions.itemId">
+                          Product
+                        </Label>
 
                         <Select
                           value={String(field.value)}
@@ -142,10 +144,12 @@ const Adjustment = ({
 
                   <Controller
                     control={inventoryAdjustmentForm.control}
-                    name={`items.${index}.changeQuantity`}
+                    name={`inventoryTransactions.${index}.changeQuantity`}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <Label htmlFor="items.changeQuantity">Quantity</Label>
+                        <Label htmlFor="inventoryTransactions.changeQuantity">
+                          Quantity
+                        </Label>
 
                         <Input
                           required
@@ -168,10 +172,12 @@ const Adjustment = ({
                   />
                   <Controller
                     control={inventoryAdjustmentForm.control}
-                    name={`items.${index}.reason`}
+                    name={`inventoryTransactions.${index}.reason`}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <Label htmlFor="items.reason">Reason</Label>
+                        <Label htmlFor="inventoryTransactions.reason">
+                          Reason
+                        </Label>
 
                         <Select
                           value={field.value}
@@ -200,10 +206,12 @@ const Adjustment = ({
 
                   <Controller
                     control={inventoryAdjustmentForm.control}
-                    name={`items.${index}.referenceId`}
+                    name={`inventoryTransactions.${index}.referenceId`}
                     render={({ field, fieldState }) => (
                       <Field data-invalid={fieldState.invalid}>
-                        <Label htmlFor="items.referenceId">Reference</Label>
+                        <Label htmlFor="inventoryTransactions.referenceId">
+                          Reference
+                        </Label>
 
                         <Input
                           className="w-24"

@@ -25,7 +25,7 @@ export const ShipmentColumns: ColumnDef<ShipmentSummary>[] = [
   {
     accessorKey: "shipmentId",
     header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="shipment ID" />
+      <DataTableColumnHeader column={column} title="Shipment ID" />
     ),
   },
   {

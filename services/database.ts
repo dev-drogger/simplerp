@@ -6,7 +6,7 @@ import {
   StockAmount,
   OrderStatus,
   InventorySummary,
-  InventoryTransaction,
+  InventoryTransactions,
   ShipmentSummary,
   ShipmentInformation,
 } from "@/types";
@@ -17,7 +17,7 @@ export const databaseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "/api",
   }),
-  tagTypes: ["Products", "OrderSummary", "Inventory", "ShipmentSummary"],
+  tagTypes: ["Products", "OrderSummary", "Inventories", "ShipmentSummary"],
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], void>({
       query: () => `/v1/products`,
@@ -25,13 +25,13 @@ export const databaseApi = createApi({
       keepUnusedDataFor: 60 * 60,
     }),
     getOrders: builder.query<OrderSummary[], void>({
-      query: () => "v1/order",
+      query: () => "v1/orders",
       providesTags: ["OrderSummary"],
       keepUnusedDataFor: 60 * 60,
     }),
     getInventory: builder.query<InventorySummary[], void>({
-      query: () => "v1/inventory",
-      providesTags: ["Inventory"],
+      query: () => "v1/inventories",
+      providesTags: ["Inventories"],
       keepUnusedDataFor: 60 * 60,
     }),
     getShipmentSummary: builder.query<ShipmentSummary[], void>({
@@ -41,7 +41,7 @@ export const databaseApi = createApi({
     }),
     createOrder: builder.mutation<DatabaseActionReturnType, PlaceOrder>({
       query: (placeOrderForm) => ({
-        url: "/v1/order",
+        url: "/v1/orders",
         method: "POST",
         body: placeOrderForm,
       }),
@@ -52,7 +52,7 @@ export const databaseApi = createApi({
       { orderId: string; materials: StockAmount }
     >({
       query: (payload) => ({
-        url: "/v1/order",
+        url: "/v1/orders",
         method: "delete",
         body: payload,
       }),
@@ -60,10 +60,10 @@ export const databaseApi = createApi({
     }),
     restockInventory: builder.mutation<
       DatabaseActionReturnType,
-      { items: StockAmount }
+      { stockAmount: StockAmount }
     >({
       query: (payload) => ({
-        url: "v1/inventory",
+        url: "v1/inventories",
         method: "PUT",
         body: payload,
       }),
@@ -73,7 +73,7 @@ export const databaseApi = createApi({
       { orderId: string; status: OrderStatus; materials: StockAmount }
     >({
       query: (payload) => ({
-        url: "v1/order",
+        url: "v1/orders",
         method: "PUT",
         body: payload,
       }),
@@ -92,14 +92,14 @@ export const databaseApi = createApi({
     }),
     createInventoryTransaction: builder.mutation<
       DatabaseActionReturnType,
-      InventoryTransaction[]
+      InventoryTransactions
     >({
-      query: (payload) => ({
-        url: "v1/production",
+      query: (inventoryTransactions) => ({
+        url: "v1/inventory-transaction",
         method: "POST",
-        body: payload,
+        body: inventoryTransactions,
       }),
-      invalidatesTags: ["Inventory"],
+      invalidatesTags: ["Inventories"],
     }),
   }),
 });

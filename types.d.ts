@@ -26,16 +26,9 @@ type InventorySummary = {
   status: StockStatus;
 };
 
-type SaleStatus =
-  | "completed"
-  | "on_process"
-  | "cancelled"
-  | "returned"
-  | "pending";
-
 export type Inventory = z.infer<typeof validation.selectInventorySchema>;
 
-export type InventoryTransaction = z.infer<
+export type InventoryTransactions = z.infer<
   typeof validation.inventoryTransactionSchema
 >;
 

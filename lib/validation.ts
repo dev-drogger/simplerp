@@ -16,6 +16,15 @@ export const selectCustomerSchema = createSelectSchema(schema.customers);
 
 export const selectProductsSchema = createSelectSchema(schema.products);
 
+export const stockAmountSchema = z.object({
+  stockAmount: z.array(
+    z.object({
+      itemId: z.number(),
+      amount: z.number(),
+    }),
+  ),
+});
+
 export const inputOrderSchema = z.object({
   invoice: z.string().startsWith("INV", "Invoice should starts with 'INV'"),
   customerName: z.string(),
@@ -30,7 +39,6 @@ export const inputOrderSchema = z.object({
       const skuSet = new Set<string>();
 
       items.forEach((item, index) => {
-        // Check quantity
         if (item.quantity <= 0) {
           ctx.addIssue({
             code: "custom",
@@ -59,32 +67,19 @@ export const inputOrderSchema = z.object({
     }),
 });
 
-export const placeOrderSchema = z.object({
-  order: createSelectSchema(schema.orders, {
-    createdAt: z.date().optional(),
-  }),
-  orderItems: z.array(
-    createSelectSchema(schema.orderItems, {
-      orderItemId: z.string().optional(),
+export const placeOrderSchema = z
+  .object({
+    order: createSelectSchema(schema.orders, {
+      createdAt: z.date().optional(),
     }),
-  ),
-  customer: selectCustomerSchema,
-  reserveQuantity: z.array(
-    z.object({
-      itemId: z.number(),
-      amount: z.number(),
-    }),
-  ),
-});
-
-export const itemsQuantitySchema = z.object({
-  items: z.array(
-    z.object({
-      itemId: z.number(),
-      amount: z.number(),
-    }),
-  ),
-});
+    orderItems: z.array(
+      createSelectSchema(schema.orderItems, {
+        orderItemId: z.string().optional(),
+      }),
+    ),
+    customer: selectCustomerSchema,
+  })
+  .and(stockAmountSchema);
 
 export const productsSchema = z.object({
   products: z
@@ -127,17 +122,22 @@ export const productsSchema = z.object({
     }),
 });
 
-export const inventoryTransactionSchema = createSelectSchema(
-  schema.inventoryTransactions,
-  {
-    inventoryTransactionId: z.number().optional,
-    referenceId: z.string().optional,
-    createdAt: z.date().optional,
-  },
-);
-
-export const testSchema = z.object({
-  items: z.array(inventoryTransactionSchema),
+export const inventoryTransactionSchema = z.object({
+  inventoryTransactions: z.array(
+    z.object({
+      itemId: z.number(),
+      changeQuantity: z.number(),
+      reason: z.enum([
+        "purchase",
+        "sale",
+        "production",
+        "adjustment",
+        "damaged",
+        "lost",
+      ]),
+      referenceId: z.string().optional(),
+    }),
+  ),
 });
 
 export const updateShipmentSchema = z.object({

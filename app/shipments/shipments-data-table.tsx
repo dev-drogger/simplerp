@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/date-picker";
 import { Search } from "lucide-react";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
+import AdjustInventoryButton from "@/components/inventory/adjust-inventory-button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -58,10 +59,8 @@ export function ShipmentsDataTable<TData, TValue>({
     globalFilterFn: (row, columnId, filterValue) => {
       const search = filterValue.toLowerCase();
       const invoice = String(row.getValue("invoice") ?? "").toLowerCase();
-      const customerName = String(
-        row.getValue("customerName") ?? "",
-      ).toLowerCase();
-      return invoice.includes(search) || customerName.includes(search);
+      const shipmentId = String(row.getValue("shipmentId") ?? "").toLowerCase();
+      return invoice.includes(search) || shipmentId.includes(search);
     },
   });
 

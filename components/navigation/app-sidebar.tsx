@@ -1,22 +1,9 @@
 "use client";
 
 import type { ComponentProps } from "react";
-import {
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  LifeBuoy,
-  Map,
-  PieChart,
-  Send,
-  Settings2,
-  Box,
-} from "lucide-react";
+import { Command, Box, ShoppingCart, Truck } from "lucide-react";
 
 import { NavMain } from "@/components/navigation/nav-main";
-import { NavProjects } from "./nav-projects";
-import { NavSecondary } from "./nav-secondary";
 import { NavUser } from "./nav-user";
 import {
   Sidebar,
@@ -39,46 +26,16 @@ const data = {
       title: "Inventory",
       url: "/inventory",
       icon: Box,
-      isActive: true,
     },
     {
       title: "Orders",
       url: "/orders",
-      icon: Bot,
+      icon: ShoppingCart,
     },
     {
       title: "Shipments",
       url: "/shipments",
-      icon: BookOpen,
-    },
-  ],
-  navSecondary: [
-    {
-      title: "Support",
-      url: "#",
-      icon: LifeBuoy,
-    },
-    {
-      title: "Feedback",
-      url: "#",
-      icon: Send,
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
+      icon: Truck,
     },
   ],
 };
@@ -90,31 +47,24 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       variant="floating"
       {...props}
     >
-      <SidebarHeader className="bg-muted rounded-t-lg">
+      <SidebarHeader className="rounded-t-lg">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton
-              size="lg"
-              asChild
-              className="hover:bg-muted-foreground"
-            >
+            <SidebarMenuButton size="lg" asChild>
               <a href="#">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                   <Command className="size-4" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">Nayanaka Perfume</span>
-                  {/* <span className="truncate text-xs">Enterprise</span> */}
                 </div>
               </a>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent className="bg-muted">
+      <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter className="bg-white rounded-b-lg">
         <NavUser user={data.user} />

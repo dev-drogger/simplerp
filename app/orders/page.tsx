@@ -3,7 +3,6 @@
 import { OrderColumns } from "./order-columns";
 import { OrderDataTable } from "./order-data-table";
 import DataTableHeader from "@/components/ui/data-table-header";
-import PlaceOrderButton from "@/components/order/place-order-button";
 import { useGetOrdersQuery } from "@/services/database";
 import LoadingScreen from "@/components/loading-screen";
 
@@ -14,8 +13,7 @@ export default function DemoPage() {
     <section className="pb-2 pt-16 pr-2 flex pl-2">
       <div className="py-8 mx-auto px-4 relative flex-1 border rounded-lg flex flex-col gap-8">
         <div className="flex flex-row items-center justify-between">
-          <DataTableHeader title="Overview" />
-          <PlaceOrderButton />
+          <DataTableHeader title="Orders" />
         </div>
         {isLoading || isFetching ? (
           <LoadingScreen />

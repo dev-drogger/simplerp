@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {
   const body = await request.json();
-  const result = await insertInventoryTransaction(body);
+
+  const { inventoryTransactions } = body;
+  const result = await insertInventoryTransaction(inventoryTransactions);
 
   return result.match(
     (data) => NextResponse.json(data, { status: 200 }),
