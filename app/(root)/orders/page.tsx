@@ -10,7 +10,7 @@ export default function DemoPage() {
   const { data, isLoading, isFetching } = useGetOrdersQuery();
 
   return (
-    <section className="pb-2 pt-16 pr-2 flex pl-2">
+    <section className="pb-2 pt-16 pr-2 flex">
       <div className="py-8 mx-auto px-4 relative flex-1 border rounded-lg flex flex-col gap-8">
         <div className="flex flex-row items-center justify-between">
           <DataTableHeader title="Orders" />

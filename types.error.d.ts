@@ -61,3 +61,5 @@ export type StockError =
   | OnHandError;
 
 export type OnHandError = DbError<"INSUFFICIENT_ON_HAND_QUANTITY">;
+
+export type GetRevenueError = DbError<"DB_REVENUE_RETRIEVAL_ERROR">;

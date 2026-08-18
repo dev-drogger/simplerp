@@ -15,6 +15,7 @@ import { OrderStatus, OrderSummary } from "@/types";
 import {
   useCreateInventoryTransactionMutation,
   useUpdateOrderStatusMutation,
+  useUpdateShipmentMutation,
 } from "@/services/database";
 import { useState } from "react";
 import { ORDER_STATUS } from "@/lib";
@@ -24,6 +25,7 @@ import {
   CreateInventoryTransactionError,
   AppError,
   UpdateOrderError,
+  UpdateShipmentsError,
 } from "@/types.error";
 import { handleErrorToast } from "../handle-error-toast";
 import { useEffect } from "react";
@@ -34,6 +36,8 @@ const UpdateOrderButton = ({ order }: { order: OrderSummary }) => {
     useUpdateOrderStatusMutation();
   const [insertInventoryTransaction, { error: inventoryTransactionError }] =
     useCreateInventoryTransactionMutation();
+  const [updateShipment, { error: updateShipmentError }] =
+    useUpdateShipmentMutation();
 
   useEffect(() => {
     if (!updateOrderError) return;
@@ -48,6 +52,12 @@ const UpdateOrderButton = ({ order }: { order: OrderSummary }) => {
     );
     return;
   }, [inventoryTransactionError]);
+
+  useEffect(() => {
+    if (!updateShipmentError) return;
+    handleErrorToast<AppError<UpdateShipmentsError>>(updateShipmentError);
+    return;
+  }, [updateShipmentError]);
 
   const handleUpdateOrder = async (status: string) => {
     const materials = releaseQuantity(order.items);
@@ -69,9 +79,16 @@ const UpdateOrderButton = ({ order }: { order: OrderSummary }) => {
         await updateOrder(payload);
         await insertInventoryTransaction(inventoryTransactionPayload);
         break;
-      default:
+      default: {
+        const shipmentStatus = status as Exclude<OrderStatus, "completed">;
+
         await updateOrder(payload);
+        await updateShipment({
+          orderId: payload.orderId,
+          shipmentStatus,
+        });
         break;
+      }
     }
 
     setOpen(!open);

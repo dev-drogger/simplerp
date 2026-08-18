@@ -1,7 +1,14 @@
 import * as validation from "@/lib/validation";
 import { z } from "zod";
-import { orderStatusEnum, shipmentStatusEnum } from "./db/schema";
-import { InferEnum } from "drizzle-orm";
+import {
+  inventoryTransactions,
+  orderStatusEnum,
+  shipmentStatusEnum,
+  userTypeEnum,
+} from "./db/schema";
+import { InferEnum, InferInsertModel } from "drizzle-orm";
+
+export type UserType = InferEnum<typeof userTypeEnum>;
 
 type OrderSummary = {
   orderId: string;
@@ -28,8 +35,8 @@ type InventorySummary = {
 
 export type Inventory = z.infer<typeof validation.selectInventorySchema>;
 
-export type InventoryTransactions = z.infer<
-  typeof validation.inventoryTransactionSchema
+export type InventoryTransactions = InferInsertModel<
+  typeof inventoryTransactions
 >;
 
 export type OrderItems = z.infer<typeof validation.selectOrderItemsSchema>;
@@ -67,7 +74,35 @@ export type shipmentStatus = InferEnum<typeof shipmentStatusEnum>;
 
 export type ShipmentInformation = {
   orderId: string;
-  shipmentId: string;
-  shipmentDetails: string;
+  shipmentId?: string;
+  shipmentDetails?: string;
   shipmentStatus: shipmentStatus;
 };
+
+export type Revenue = {
+  revenue: number;
+};
+
+export type DashboardData = {
+  monthlyRevenue: {
+    value: number;
+    link: string;
+  };
+  todayOrders: {
+    value: number;
+    link: string;
+  };
+  pendingOrders: {
+    value: number;
+    link: string;
+  };
+  pendingShipments: {
+    value: number;
+    link: string;
+  };
+};
+
+export interface AuthCredentials {
+  username: string;
+  password: string;
+}

@@ -189,7 +189,11 @@ const Restock = ({
         </FieldGroup>
 
         <DialogFooter>
-          <Button onClick={() => setSelected(null)} disabled={isLoading}>
+          <Button
+            onClick={() => setSelected(null)}
+            type="button"
+            disabled={isLoading}
+          >
             Back
           </Button>
           <Button

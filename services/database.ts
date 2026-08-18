@@ -9,6 +9,7 @@ import {
   InventoryTransactions,
   ShipmentSummary,
   ShipmentInformation,
+  DashboardData,
 } from "@/types";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -17,7 +18,13 @@ export const databaseApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: "/api",
   }),
-  tagTypes: ["Products", "OrderSummary", "Inventories", "ShipmentSummary"],
+  tagTypes: [
+    "Products",
+    "OrderSummary",
+    "Inventories",
+    "ShipmentSummary",
+    "DashboardData",
+  ],
   endpoints: (builder) => ({
     getProducts: builder.query<Product[], void>({
       query: () => `/v1/products`,
@@ -39,13 +46,18 @@ export const databaseApi = createApi({
       providesTags: ["ShipmentSummary"],
       keepUnusedDataFor: 60 * 60,
     }),
+    getDashboardData: builder.query<DashboardData, void>({
+      query: () => "v1/dashboard",
+      providesTags: ["DashboardData"],
+      keepUnusedDataFor: 60 * 60,
+    }),
     createOrder: builder.mutation<DatabaseActionReturnType, PlaceOrder>({
       query: (placeOrderForm) => ({
         url: "/v1/orders",
         method: "POST",
         body: placeOrderForm,
       }),
-      invalidatesTags: ["OrderSummary"],
+      invalidatesTags: ["OrderSummary", "Inventories", "DashboardData"],
     }),
     deleteOrder: builder.mutation<
       DatabaseActionReturnType,
@@ -77,7 +89,7 @@ export const databaseApi = createApi({
         method: "PUT",
         body: payload,
       }),
-      invalidatesTags: ["OrderSummary"],
+      invalidatesTags: ["OrderSummary", "DashboardData", "Inventories"],
     }),
     updateShipment: builder.mutation<
       DatabaseActionReturnType,
@@ -88,11 +100,11 @@ export const databaseApi = createApi({
         method: "PUT",
         body: payload,
       }),
-      invalidatesTags: ["ShipmentSummary"],
+      invalidatesTags: ["ShipmentSummary", "DashboardData"],
     }),
     createInventoryTransaction: builder.mutation<
       DatabaseActionReturnType,
-      InventoryTransactions
+      InventoryTransactions[]
     >({
       query: (inventoryTransactions) => ({
         url: "v1/inventory-transaction",
@@ -105,6 +117,7 @@ export const databaseApi = createApi({
 });
 
 export const {
+  useGetDashboardDataQuery,
   useGetProductsQuery,
   useLazyGetProductsQuery,
   useGetOrdersQuery,

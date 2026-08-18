@@ -36,6 +36,7 @@ export function NavMain({
               asChild
               tooltip={item.title}
               isActive={item.url === pathname}
+              // className="data-active:bg-gray-300 hover:bg-gray-300/70 transition-colors duration-100"
             >
               <Link href={item.url}>
                 <item.icon />

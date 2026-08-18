@@ -1,72 +1,59 @@
-export const recipeA = {
-  OPI: 16,
-  VSC: 8,
-  BCC: 4,
-  "Hana Sticker": 1,
-  Bottle: 1,
-  Cap: 1,
-  DPG: 3,
-  ESA: 19,
-  Box: 1,
-};
-
 export const RECIPE = {
   NPWGEISHA: {
-    Geisha: 1,
+    "Perfume - Variant A": 1,
     Box: 1,
     Pouch: 1,
-    Bubble: 50,
+    "Bubble Wrap": 50,
   },
   NPWHANA: {
-    Hana: 1,
+    "Perfume - Variant B": 1,
     Box: 1,
     Pouch: 1,
-    Bubble: 50,
+    "Bubble Wrap": 50,
   },
 };
 
 export const PRODUCTION_MATERIALS = {
   NPWGEISHA: {
-    OPI: 16,
-    VSC: 8,
-    BCC: 4,
-    DPG: 3,
-    ESA: 19,
-    "Geisha Sticker": 1,
+    "Chemical C": 16,
+    "Chemical D": 8,
+    "Chemical E": 4,
+    "Chemical A": 3,
+    "Chemical B": 19,
+    "Product Sticker": 1,
     Bottle: 1,
-    Cap: 1,
-    Geisha: -1,
+    "Cap and Sprayer": 1,
+    "Perfume - Variant A": -1,
   },
   NPWHANA: {
-    OPI: 18,
-    VSC: 6,
-    LUC: 6,
-    DPG: 3,
-    ESA: 17,
-    "Hana Sticker": 1,
+    "Chemical C": 18,
+    "Chemical D": 6,
+    "Chemical F": 6,
+    "Chemical A": 3,
+    "Chemical B": 17,
+    "Product Sticker": 1,
     Bottle: 1,
-    Cap: 1,
-    Hana: -1,
+    "Cap and Sprayer": 1,
+    "Perfume - Variant B": -1,
   },
 };
 // kalo typenya production product ++ yang lain -- kalo typenya sale semuanya --
 
 export const INVENTORY_ITEMS = {
-  DPG: 11,
-  ESA: 12,
-  VSC: 14,
-  "Hana Sticker": 22,
-  OPI: 13,
-  BCC: 15,
-  "Geisha Sticker": 21,
+  "Chemical A": 11,
+  "Chemical B": 12,
+  "Chemical D": 14,
+  "Chemical C": 13,
+  "Chemical E": 15,
+  "Product Sticker": 21,
   Bottle: 23,
-  Cap: 24,
+  "Cap and Sprayer": 24,
   Box: 25,
-  Geisha: 31,
-  Hana: 32,
+  "Perfume - Variant A": 31,
+  "Perfume - Variant B": 32,
   Pouch: 26,
-  Bubble: 27,
-  LUC: 16,
+  "Bubble Wrap": 27,
+  "Chemical F": 16,
 };
 
 export const ORDER_STATUS = [
@@ -197,3 +184,34 @@ export const ERROR_REGISTRY = {
 } as const satisfies Record<string, { type: string; error: string }>;
 
 export type ErrorRegistryKey = keyof typeof ERROR_REGISTRY;
+
+export const AUTH_FORM_FIELD = {
+  SIGN_IN: {
+    names: {
+      username: "Username",
+      email: "email",
+      password: "Password",
+    },
+    types: {
+      username: "text",
+      email: "email",
+      password: "password",
+    },
+    placeholders: {
+      username: "Enter your username",
+      email: "Enter your email",
+      password: "Enter your password",
+    },
+  },
+};
+
+export const PUBLIC_ROUTES = [
+  "/",
+  "/rate-limit",
+  "/sitemap.xml",
+  "/robots.txt",
+];
+
+export const AUTH_ROUTES = "/sign-in";
+export const API_ROUTES = "/api";
+export const AUTH_API_ROUTES = "/api/auth";

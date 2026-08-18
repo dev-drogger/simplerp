@@ -25,7 +25,6 @@ import { Input } from "@/components/ui/input";
 import DatePicker from "@/components/date-picker";
 import { Search } from "lucide-react";
 import { DataTablePagination } from "@/components/ui/data-table-pagination";
-import AdjustInventoryButton from "@/components/inventory/adjust-inventory-button";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];

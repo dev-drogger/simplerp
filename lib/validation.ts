@@ -155,3 +155,14 @@ export const updateShipmentSchema = z.object({
     "failed_delivery",
   ]),
 });
+
+export const signInSchema = z.object({
+  username: z
+    .string()
+    .min(5, "Username must contains at least 5 characters")
+    .max(20),
+  password: z.string(),
+  // .min(8, "Password must contains at least 8 characters and one number")
+  // .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  // .regex(/[0-9]/, "Password must contain at least one number"),
+});

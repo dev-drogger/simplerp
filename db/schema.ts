@@ -10,8 +10,14 @@ import {
   text,
 } from "drizzle-orm/pg-core";
 
+export const userTypeEnum = pgEnum("user_type", [
+  "level_0",
+  "level_1",
+  "level_2",
+  "level_3",
+]);
+
 export const orderStatusEnum = pgEnum("order_status", [
-  "on_process",
   "completed",
   "cancelled",
   "returned",
@@ -133,4 +139,12 @@ export const shipments = snakeCase.table("shipments", {
   shipmentId: varchar().notNull().default("No Data"),
   shipmentStatus: shipmentStatusEnum("shipment_status").notNull(),
   shipmentDetails: text().notNull().default("No Details"),
+});
+
+export const users = snakeCase.table("users", {
+  userId: uuid().primaryKey().defaultRandom(),
+  username: varchar().notNull().unique(),
+  email: varchar("email").notNull().default("test@mail.com"),
+  password: varchar().default("").notNull(),
+  userType: userTypeEnum("user_type").notNull().default("level_3"),
 });

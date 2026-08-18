@@ -5,6 +5,7 @@ import {
   Dialog,
   DialogHeader,
   DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -72,6 +73,10 @@ const UpdateShipmentButton = ({ shipment }: { shipment: ShipmentSummary }) => {
   const handleShipmentSubmit = updateShipmentForm.handleSubmit(
     async (values) => {
       try {
+        // switch (values.shipmentStatus) {
+        //   case "lost":
+
+        //   }
         await updateShipment(values).unwrap();
         setOpen(!open);
         toast.success("Successfully updated the shipment!");
@@ -106,7 +111,7 @@ const UpdateShipmentButton = ({ shipment }: { shipment: ShipmentSummary }) => {
                 name={`shipmentId`}
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <Label htmlFor="shipmentId">shipment ID</Label>
+                    <Label htmlFor="shipmentId">Shipment ID</Label>
                     <Input
                       required
                       id="shipmentId"
@@ -186,7 +191,9 @@ const UpdateShipmentButton = ({ shipment }: { shipment: ShipmentSummary }) => {
           </FieldGroup>
 
           <DialogFooter>
-            <Button disabled={isLoading}>Back</Button>
+            <DialogClose asChild>
+              <Button disabled={isLoading}>Cancel</Button>
+            </DialogClose>
             <Button
               type="submit"
               disabled={isLoading}

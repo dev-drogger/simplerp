@@ -1,11 +1,7 @@
 import localFont from "next/font/local";
-import { AppSidebar } from "@/components/navigation/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { SidebarProvider } from "@/components/ui/sidebar";
 
 import type { Metadata } from "next";
 import "./globals.css";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import ReduxProvider from "@/redux/redux-provider";
 import { Toaster } from "sonner";
 
@@ -95,27 +91,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${montreal.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
-        <div className="[--header-height:calc(--spacing(14))]">
-          <ReduxProvider>
-            <TooltipProvider>
-              <SidebarProvider className="flex flex-col">
-                <SiteHeader />
-                <div className="flex flex-1">
-                  <AppSidebar />
-                  <main className="flex-1">{children}</main>
-                  <Toaster
-                    richColors
-                    position="top-center"
-                    offset={120}
-                    mobileOffset={100}
-                    className="fixed z-50 top"
-                    expand={true}
-                  />
-                </div>
-              </SidebarProvider>
-            </TooltipProvider>
-          </ReduxProvider>
-        </div>
+        <ReduxProvider>
+          {children}
+          <Toaster
+            richColors
+            position="top-center"
+            offset={120}
+            mobileOffset={100}
+            className="fixed z-50 top"
+            expand={true}
+          />
+        </ReduxProvider>
       </body>
     </html>
   );

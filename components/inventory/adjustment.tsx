@@ -74,8 +74,9 @@ const Adjustment = ({
 
   const handleInventoryTransactionsSubmit =
     inventoryAdjustmentForm.handleSubmit(async (values) => {
+      const { inventoryTransactions } = values;
       try {
-        await insertInventoryTransaction(values).unwrap();
+        await insertInventoryTransaction(inventoryTransactions).unwrap();
         setOpen(false);
         toast.success("Successfully adjusted the stock!");
         inventoryAdjustmentForm.reset();
@@ -258,7 +259,11 @@ const Adjustment = ({
         </FieldGroup>
 
         <DialogFooter>
-          <Button onClick={() => setSelected(null)} disabled={isLoading}>
+          <Button
+            onClick={() => setSelected(null)}
+            type="button"
+            disabled={isLoading}
+          >
             Back
           </Button>
           <Button
