@@ -5,6 +5,11 @@ import { ShipmentColumns } from "./shipments-columns";
 import { ShipmentsDataTable } from "./shipments-data-table";
 import { useGetShipmentSummaryQuery } from "@/services/database";
 import LoadingScreen from "@/components/loading-screen";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Shipments",
+};
 
 export default function Page() {
   const { data, isLoading, isFetching } = useGetShipmentSummaryQuery();

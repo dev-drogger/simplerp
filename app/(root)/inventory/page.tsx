@@ -6,6 +6,11 @@ import { InventoryDataTable } from "./inventory-data-table";
 import AdjustInventoryButton from "@/components/inventory/adjust-inventory-button";
 import { useGetInventoryQuery } from "@/services/database";
 import LoadingScreen from "@/components/loading-screen";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Inventories",
+};
 
 export default function Page() {
   const { data, isLoading, isFetching } = useGetInventoryQuery();

@@ -16,7 +16,7 @@ import { Input } from "./ui/input";
 import { AUTH_FORM_FIELD } from "@/lib";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { EyeOff, Eye, ArrowRight, House, Loader2 } from "lucide-react";
+import { EyeOff, Eye, ArrowRight, Loader2 } from "lucide-react";
 import { signInSchema } from "@/lib/validation";
 import { AuthCredentials } from "@/types";
 import { toast } from "sonner";
@@ -63,10 +63,7 @@ const SignInForm = <T extends FieldValues>({
   }, [router]);
 
   return (
-    <form
-      onSubmit={form.handleSubmit(handleSubmit)}
-      className="space-y-5 font-switzer"
-    >
+    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
       <FieldGroup>
         {Object.keys(defaultValues).map((field) => (
           <Controller
@@ -98,7 +95,7 @@ const SignInForm = <T extends FieldValues>({
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 mt-3 right-3 flex items-center"
+                      className="absolute top-1/2 right-3 -translate-y-1/2 flex items-center"
                     >
                       {showPassword ? (
                         <EyeOff className="w-5 h-5 text-muted-foreground hover:text-foreground transition-colors" />
@@ -129,17 +126,6 @@ const SignInForm = <T extends FieldValues>({
           />
         ))}
       </FieldGroup>
-      <div className="flex items-center justify-between text-sm">
-        <a
-          href="#"
-          onClick={(e) => {
-            e.preventDefault();
-          }}
-          className="hover:underline text-reddish transition-colors"
-        >
-          Reset password
-        </a>
-      </div>
 
       <Button
         type="submit"
@@ -154,18 +140,6 @@ const SignInForm = <T extends FieldValues>({
             <ArrowRight />
           </>
         )}
-      </Button>
-
-      <Button
-        size={"lg"}
-        onClick={(e) => {
-          e.preventDefault();
-          router.push("/");
-        }}
-        className=" text-black bg-yellish hover:bg-yellish-muted transition-colors rounded-2xl py-7  font-medium text-[16px] w-full"
-      >
-        Back to Home Page
-        <House />
       </Button>
     </form>
   );

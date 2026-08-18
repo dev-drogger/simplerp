@@ -5,8 +5,13 @@ import { OrderDataTable } from "./order-data-table";
 import DataTableHeader from "@/components/ui/data-table-header";
 import { useGetOrdersQuery } from "@/services/database";
 import LoadingScreen from "@/components/loading-screen";
+import { Metadata } from "next";
 
-export default function DemoPage() {
+export const metadata: Metadata = {
+  title: "Orders",
+};
+
+export default function Page() {
   const { data, isLoading, isFetching } = useGetOrdersQuery();
 
   return (
